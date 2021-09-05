@@ -60,6 +60,12 @@
 	  {% if post.ppt %}
         <a href="{{ post.ppt }}"><i class="fas fa-fw fa-file-powerpoint zoom" aria-hidden="true"></i></a>
       {% endif %}
+	  {% if post.video %}
+        <a href="{{ post.video }}"><i class="fas fa-fw fa-file-video zoom" aria-hidden="true"></i></a>
+      {% endif %}
+	  {% if post.abstract %}
+        <a href="{{ post.abstract }}"><i class="fas fa-fw fa-file-alt zoom" aria-hidden="true"></i></a>
+      {% endif %}
       </p>
 	  
   </article>
