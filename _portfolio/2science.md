@@ -3,6 +3,7 @@ title: "2’ science: A Science Communication Project for Astrophysics & Space P
 collection: portfolio
 permalink: /portfolio/2science
 link: 'https://sites.google.com/view/2sciencegr'
+url: 'https://sites.google.com/view/2sciencegr'
 ---
 
 <br/><img src='/images/2sci_logo.jpg'>
