@@ -179,7 +179,7 @@ collections:
   publications:
     output: true
     permalink: /:collection/:path/
-  research:
+  sidework:
     output: true
     permalink: /:collection/:path/
   talks:
@@ -225,10 +225,10 @@ defaults:
       author_profile: true
       share: true
       comments: true
-  # _research
+  # sidework
   - scope:
       path: ""
-      type: research
+      type: sidework
     values:
       layout: single
       author_profile: true
