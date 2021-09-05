@@ -10,5 +10,6 @@ Test
 {% include base_path %}
 
 {% for post in site.sidework %}
-  {% include archive-single.html %}
+  {% include archive-single-sidework.html %}
 {% endfor %}
+
