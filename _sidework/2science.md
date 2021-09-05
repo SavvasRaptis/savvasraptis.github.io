@@ -3,8 +3,8 @@ title: "2’ science: A Science Communication Project for Astrophysics & Space P
 collection: sidework
 type: "Outreach"
 permalink: /sidework/2science
-excerpt: "2’ science: <img src='/images/2sci_logo.png' alt=''>"
-paperurl: "https://sites.google.com/view/2sciencegr/home?authuser=0"
+excerpt: "2’ science: <img src='/images/2sci_logo.jpg' alt=''>"
+link: "https://sites.google.com/view/2sciencegr/home?authuser=0"
 github: "https://github.com/2-science"
 ---
 
