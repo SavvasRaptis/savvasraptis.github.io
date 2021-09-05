@@ -1,6 +1,5 @@
 ---
 title: "Academic LaTeX template package"
-excerpt: "Academic LaTeX template package is a collection of different templates used throughout my PhD years"
 collection: sidework
 permalink: /sidework/academicPackage
 github: "https://github.com/SavvasRaptis/academic-pack-public"
