@@ -1,9 +1,8 @@
 ---
 title: "2’ science: A Science Communication Project for Astrophysics & Space Physics"
 collection: sidework
-type: "Outreach"
 permalink: /sidework/2science
-paperurl: "https://sites.google.com/view/2sciencegr/home?authuser=0"
+link: "https://sites.google.com/view/2sciencegr/home?authuser=0"
 github: "https://github.com/2-science"
 ---
 
