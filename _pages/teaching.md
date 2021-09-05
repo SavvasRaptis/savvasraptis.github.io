@@ -14,7 +14,7 @@ title: "Teaching"
 - EI2405 : Classical Electrodynamics (Bachelor - Spring 2019)
 	- Teaching Assistant
 - EF112X : LaTeX workshop (Bachelor - 2019 - 2021)
-	- Teaching Assistant
+	- Lecturer & Teaching Assistant
 
 ## Social Tuition Center of City of Athens
 
