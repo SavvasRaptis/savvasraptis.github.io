@@ -39,6 +39,9 @@
 	  {% if post.abstract %}
         <a href="{{ post.abstract }}"><i class="fas fa-fw fa-file-alt zoom" aria-hidden="true"></i></a>
       {% endif %}
+	  {% if post.picture %}
+        <a href="{{ post.picture }}"><i class="fas fa-fw fa-file-image zoom" aria-hidden="true"></i></a>
+      {% endif %}
       {% if post.link %}
         <a href="{{ post.link }}"><i class="fas fa-fw fa-link zoom" aria-hidden="true"></i></a>
       {% endif %}
@@ -57,7 +60,9 @@
 	  {% if post.video %}
         <a href="{{ post.video }}"><i class="fas fa-fw fa-file-video zoom" aria-hidden="true"></i></a>
       {% endif %}
-
+	  {% if post.youtubelink %}
+        <a href="{{ post.youtubelink }}"><i class="fab fa-fw fa-youtube zoom" aria-hidden="true"></i></a>
+      {% endif %}
       </p>
 	  
   </article>
