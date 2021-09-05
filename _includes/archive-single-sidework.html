@@ -35,6 +35,7 @@
     <!-- {% if post.date %}<p class="page__meta"><i class="fa fa-clock-o" aria-hidden="true"></i> {{ post.date | date: '%d %B, %Y' }}</p>{% endif %} -->
     {% if post.type %}<p class="archive__item-excerpt" itemprop="description">{{post.type}} {% endif %}
     {% if post.excerpt %}<p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify }}</p>{% endif %}
+    {% if post.text %}<p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify }}</p>{% endif %}
 	<p>
 	  {% if post.abstract %}
         <a href="{{ post.abstract }}"><i class="fas fa-fw fa-file-alt zoom" aria-hidden="true"></i></a>
