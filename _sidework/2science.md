@@ -3,11 +3,9 @@ title: "2’ science: A Science Communication Project for Astrophysics & Space P
 layout: single-portfolio
 excerpt: "<img src='/images/2sci_logo.png' alt=''>"
 collection: sidework
-order_number: 10
-header:
-  og_image: "/images/2sci_logo.png"
 ---
  Test
+ 
 ## Test
 
 [2' Science](https://sites.google.com/view/2sciencegr/home?authuser=0)
