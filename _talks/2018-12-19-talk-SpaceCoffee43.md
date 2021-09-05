@@ -1,7 +1,7 @@
 ---
 title: "Forecasting CMEs using Image Processing & Neural Networks"
 collection: talks
-type: "(**Seminar**) presentation"
+type: "(<b>Seminar</b>) presentation"
 permalink: /talks/2018-12-19-talk-SpaceCoffee43
 venue: "University of Athens"
 date: 2018-12-19

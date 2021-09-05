@@ -1,7 +1,7 @@
 ---
 title: "Magnetosheath Jets Close to the Bow Shock: Generation Scenarios using MMS"
 collection: talks
-type: "(**Invited**) Oral presentation"
+type: "(<b>Seminar</b>) Oral presentation"
 permalink: /talks/2021-01-20-talk-mini-GEM
 venue: "mini-GEM Collisionless Shock Group"
 date: 2021-01-20
