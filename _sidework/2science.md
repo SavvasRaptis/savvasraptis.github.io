@@ -2,7 +2,7 @@
 title: "2’ science: A Science Communication Project for Astrophysics & Space Physics"
 collection: sidework
 permalink: /sidework/2science
-excerpt:  "<a href="https://sites.google.com/view/2sciencegr/home?authuser=0"> <br/><img src='/images/2sci_logo.jpg'> </a>"
+excerpt:  "<br/><img src='/images/2sci_logo.jpg' alt="https://sites.google.com/view/2sciencegr" >"
 link: "https://sites.google.com/view/2sciencegr/home?authuser=0"
 github: "https://github.com/2-science"
 text: "
