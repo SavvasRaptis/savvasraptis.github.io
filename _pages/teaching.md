@@ -21,7 +21,7 @@ title: "Teaching"
 - Specialized Topics in Physics: Mechanics, Oscillations, and Waves (High School - 2013 - 2015)
 	- Organizer, Lecturer & Teaching Assistant
 
-Extended information with a small syllabus and my tasks on each course shown above can be found in the PDF below
+Extended information with a small syllabus and my tasks for each course can be found in the PDF below
 
 <iframe src="/files/teaching/Teaching_Experience.pdf" width="100%" height="500" frameborder="no" border="0" marginwidth="0" marginheight="0"></iframe>
 
