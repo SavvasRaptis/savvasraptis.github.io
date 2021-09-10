@@ -15,5 +15,3 @@ header:
 Savvas Raptis. "What is Machine Learning." *2' Science*.
 
 [Article](https://savvasraptis.github.io/)
-
-> This work

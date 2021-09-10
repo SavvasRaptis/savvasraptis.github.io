@@ -4,7 +4,7 @@ title: "Outreach"
 permalink: /outreach/
 author_profile: true
 header:
-  og_image: "outreach/NN_preview.png"
+  og_image: "NN_preview.png"
 ---
 
 Outreach page
