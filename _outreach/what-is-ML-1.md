@@ -11,6 +11,10 @@ header:
 
 ## Article
 
+"<img src='/images/outreach/NN_preview.png' alt=''>"
+
 Savvas Raptis. "What is Machine Learning." *2' Science*.
 
 [Article](https://savvasraptis.github.io/)
+
+> This work
