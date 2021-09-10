@@ -15,12 +15,12 @@ main:
   - title: "CV"
     url: /cv/
     
-  - title: "Posts"
-    url: /posts/
+  #- title: "Posts"
+  #  url: /posts/
     
-  - #title: "Research"
-    #url: /research/
+  #- title: "Research"
+  #  url: /research/
 
-  - #title: "Software"
-    #url: /software/
+  #- title: "Software"
+  #  url: /software/
 
