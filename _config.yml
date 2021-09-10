@@ -225,15 +225,15 @@ defaults:
       author_profile: true
       share: true
       comments: true
-  # sidework
+# outreach
   - scope:
       path: ""
-      type: sidework
+      type: outreach
     values:
       layout: single
       author_profile: true
       share: true
-      comment: true
+      comments: true
   # _talks
   - scope:
       path: ""
