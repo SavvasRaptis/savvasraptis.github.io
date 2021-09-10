@@ -10,8 +10,7 @@ header:
 
 
 ## Article
-
-<img src='/images/outreach/NN_preview.png' alt=''>
+![test](/images/outreach/NN_preview.png)
 
 Savvas Raptis. "What is Machine Learning." *2' Science*.
 
