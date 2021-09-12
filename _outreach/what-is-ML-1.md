@@ -8,10 +8,8 @@ header:
   og_image: "NN_preview.png"
 ---
 
-
-## Article
-![test](/images/NN_preview.png)
-
 Savvas Raptis. "What is Machine Learning." *2' Science*.
+## Article
 
-[Article](https://savvasraptis.github.io/)
+
+![test](/_outreach/what-is-ML-1_fig_1.gif)
