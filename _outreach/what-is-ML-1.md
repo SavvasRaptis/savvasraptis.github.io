@@ -43,3 +43,11 @@ Google's Deep Mind after million of tries learned how to play the classic Atari 
 ![Figure 3](/outreach/what-is-ML-1_fig_3.gif)
 
 In future the next parts of the series we will look at each category separately. Doing so, we will dive into more details, examples and discuss the most common practices used today.
+
+## Further Reading / References
+
+(Step 1 — Introduction) : Crash Course — Artificial Intelligence Series: https://thecrashcourse.com/courses/ai  & Computer Scientist Explains Machine Learning in 5 Levels of Difficulty - WIRED https://www.youtube.com/watch?v=5q87K1WaoFI
+
+(Step 2 — Hands-on) : Machine Learning Coursera Course - offered by Stanford : https://www.coursera.org/learn/machine-learning
+
+(Step 3 — Theoretical reading) : Bishop, Christopher M. “Pattern Recognition and Machine Learning (Information Science and Statistics).” Machine learning 128.9 (2006).
