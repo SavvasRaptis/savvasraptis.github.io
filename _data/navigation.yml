@@ -15,8 +15,8 @@ main:
   - title: "CV"
     url: /cv/
     
-  - title: "Outreach"
-    url: /outreach/
+  #- title: "Outreach"
+  #  url: /outreach/
     
   #- title: "Posts"
   #  url: /posts/
