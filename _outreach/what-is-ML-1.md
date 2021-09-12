@@ -46,8 +46,8 @@ In future the next parts of the series we will look at each category separately.
 
 ## Further Reading / References
 
-(Step 1 — Introduction) : Crash Course — Artificial Intelligence Series: https://thecrashcourse.com/courses/ai  & Computer Scientist Explains Machine Learning in 5 Levels of Difficulty - WIRED https://www.youtube.com/watch?v=5q87K1WaoFI
+(Step 1 — Introduction) : [Crash Course — Artificial Intelligence Series](https://thecrashcourse.com/courses/ai)  & [Computer Scientist Explains Machine Learning in 5 Levels of Difficulty - WIRED](https://www.youtube.com/watch?v=5q87K1WaoFI)
 
-(Step 2 — Hands-on) : Machine Learning Coursera Course - offered by Stanford : https://www.coursera.org/learn/machine-learning
+(Step 2 — Hands-on) : [Machine Learning Coursera Course - offered by Stanford](https://www.coursera.org/learn/machine-learning)
 
 (Step 3 — Theoretical reading) : Bishop, Christopher M. “Pattern Recognition and Machine Learning (Information Science and Statistics).” Machine learning 128.9 (2006).
