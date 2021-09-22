@@ -11,6 +11,5 @@ Karlsson, T., Georgiou, M., & Balasis,
 G. (2021). On the generation of Pi2
 pulsations due to plasma flow patterns
 around magnetosheath jets. Geophysical
-Research Letters, 48, e2021GL093611.
-https://doi.org/10.1029/2021GL093611'
+Research Letters, 48, e2021GL093611. doi:10.1029/2021GL093611'
 ---
