@@ -7,4 +7,5 @@ venue: "mini-GEM Dayside Kinetic Group"
 date: 2021-01-19
 location: "Online, Virtual"
 paperurl: "/files/presentations/2021/MiniGEM_talk_1.pdf"
+ppt: "/files/presentations/2021/MiniGEM_talk_1.pptx"
 ---

@@ -8,4 +8,5 @@ date: 2019-09-19
 location: "Amsterdam, Netherlands"
 abstract: "/files/presentations/2019/MLhelio_19_abstract.pdf"
 paperurl: "/files/presentations/2019/MLhelio_19_talk.pdf"
+ppt: "/files/presentations/2019/MLhelio_19_talk.pptx"
 ---

@@ -7,4 +7,5 @@ venue: "mini-GEM Collisionless Shock Group"
 date: 2021-01-20
 location: "Online, Virtual"
 paperurl: "/files/presentations/2021/MiniGEM_talk_2.pdf"
+ppt: "/files/presentations/2021/MiniGEM_talk_2.pptx"
 ---
