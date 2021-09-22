@@ -3,12 +3,12 @@ title: "What is Machine Learning - Part 1"
 layout: single-portfolio
 excerpt: "<img src='/images/NN_preview.png' alt=''>"
 collection: outreach
-order_number: 10
+order_number: 20
 header:
   og_image: "NN_preview.png"
 ---
 
-The following article is a translation of the article written for the Greek outreach site of [2' science](https://2science.gr/)
+The following article is a translated and adapted version of an article initially written for the Greek outreach site of [2' science](https://2science.gr/)
 
 ## Article
 
@@ -23,7 +23,6 @@ Supervised learning is the technique in which a program is trained to understand
 Below we can see a visualization of a neural network. This is one of the most widely used supervised learning techniques. In this example it shows how a computer is able to recognize hand-written numbers! Credits: [3 Blue 1 Brown - Neural Networks](https://www.youtube.com/watch?v=aircAruvnKk).
 
 ![figure 1](/outreach/what-is-ML-1_fig_1.gif)
-
 
 
 ### Unsupervised Learning
