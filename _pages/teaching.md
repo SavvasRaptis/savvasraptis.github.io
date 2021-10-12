@@ -6,7 +6,7 @@ title: "Teaching"
 ## KTH Royal Institute of Technology
 
 - EF2240 : Space Physics I (Master - Autumn 2021)
-	- Lecturer & Teaching Assistant
+	- Teaching Assistant & Guest Lecturer
 - EI1110 : Electrical Circuit Analysis (Bachelor - Spring 2020)
 	- Teaching Assistant
 - EF2240 : Space Physics I (Master - Autumn 2020)
