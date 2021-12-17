@@ -1,5 +1,5 @@
 ---
-title: "What is Machine Learning - Part 2"
+title: "What are Neural Networks - Part 2"
 layout: single-portfolio
 excerpt: "<img src='/images/NN_preview.png' alt=''>"
 collection: outreach
@@ -16,3 +16,7 @@ Historically, the research of biological neurons and the human brain has greatly
 Below we can see a simplistic comparison between a biological (left) and an artificial (right) neural network. Credits: [Medium | Build your perceptron neural net from scratch](https://www.google.com/url?q=https%3A%2F%2Fmedium.com%2F%40ismailghallou%2Fbuild-your-perceptron-neural-net-from-scratch-e12b7be9d1ef&sa=D&sntz=1&usg=AFQjCNFsz5ese4jdq6OAo8uiLrsPC04rqw).
 
 ![figure 1](/outreach/what-is-ML-2_fig_1.jpg)
+
+### Training
+
+### Testing
