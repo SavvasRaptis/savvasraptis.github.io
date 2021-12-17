@@ -1,11 +1,11 @@
 ---
 title: "What is Machine Learning - Part 1"
 layout: single-portfolio
-excerpt: "<img src='/images/NN_preview.png' alt=''>"
+excerpt: "<img src='/images/What_is_ml.png' alt=''>"
 collection: outreach
 order_number: 20
 header:
-  og_image: "NN_preview.png"
+  og_image: "What_is_ml.png"
 ---
   ## Article
 
