@@ -7,9 +7,6 @@ order_number: 10
 header:
   og_image: "shock_preview.png"
 ---
-
-The following article is a translated and adapted version of an article initially written for the Greek outreach site of [2' science](https://2science.gr/)
-
 ## Article
 
 ### The Earth's Bow Shock
