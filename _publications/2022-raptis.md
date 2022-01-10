@@ -1,7 +1,7 @@
 ---
 title: "Downstream Super-magnetosonic Plasma Jet Generation as a Direct Consequence of Shock Reformation"
 collection: publications
-permalink: /publication/2021-raptis
+permalink: /publication/2022-raptis
 date: 2022-02-05
 venue: 'Nature Communications'
 paperurl: 'http://savvasraptis.github.io/publications'
