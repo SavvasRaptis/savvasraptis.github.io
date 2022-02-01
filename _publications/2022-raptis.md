@@ -1,10 +1,10 @@
 ---
-title: "Downstream Super-magnetosonic Plasma Jet Generation as a Direct Consequence of Shock Reformation"
+title: "Downstream high-speed plasma jet generation as a direct consequence of shock reformation"
 collection: publications
 permalink: /publication/2022-raptis
-date: 2022-02-05
+date: 2022-02-01
 venue: 'Nature Communications'
-paperurl: 'http://savvasraptis.github.io/publications'
-link: 'https://www.researchsquare.com/article/rs-711807/v1'
-citation: '<b>Raptis, S.</b>, Karlsson, T., Vaivads, A., Pollock, C., Plaschke, F., Johlander, A., Trollvik, H., & Lindqvist, P.-A. (2021). Downstream High-speed Plasma Jet Generation as a Direct Consequence of Shock Reformation. Nature Communications (<b> accepted </b> – Preprint available online: https://www.researchsquare.com/article/rs-711807/v1 )'
+paperurl: 'https://www.nature.com/articles/s41467-022-28110-4.pdf'
+link: 'https://www.nature.com/articles/s41467-022-28110-4'
+citation: '<b>Rapitis, S.</b>, Karlsson, T., Vaivads, A. et al. Downstream high-speed plasma jet generation as a direct consequence of shock reformation. Nat Commun 13, 598 (2022). https://doi.org/10.1038/s41467-022-28110-4)'
 ---
