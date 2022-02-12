@@ -26,7 +26,7 @@
       </div>
     {% endif %}
 
-    <h2 class="archive__item-title" itemprop="headline">
+    <h2  margin:0; class="archive__item-title" itemprop="headline">
         {{ title }}
     </h2>
     {% if post.read_time %}
@@ -35,7 +35,7 @@
     <!-- {% if post.date %}<p class="page__meta"><i class="fa fa-clock-o" aria-hidden="true"></i> {{ post.date | date: '%d %B, %Y' }}</p>{% endif %} -->
     {% if post.venue %}<p class="archive__item-excerpt" itemprop="description">{{post.type}}, {{ post.venue }},  {{post.location}}, {{ post.date | date: '%d %B, %Y' }} {% endif %}
     {% if post.excerpt %}<p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify }}</p>{% endif %}
-	<p class="small">
+	<p>
 	  {% if post.abstract %}
         <a href="{{ post.abstract }}"><i class="fas fa-fw fa-file-alt zoom" aria-hidden="true"></i></a>
       {% endif %}
@@ -64,6 +64,5 @@
         <a href="{{ post.youtubelink }}"><i class="fab fa-fw fa-youtube zoom" aria-hidden="true"></i></a>
       {% endif %}
       </p>
-	  
   </article>
 </div>
