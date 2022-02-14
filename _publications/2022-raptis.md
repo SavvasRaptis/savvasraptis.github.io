@@ -1,5 +1,5 @@
 ---
-title: "Downstream high-speed plasma jet generation as a direct consequence of shock reformation <sup>⭐</sup>"
+title: "Downstream high-speed plasma jet generation as a direct consequence of shock reformation<small>⭐</small>"
 collection: publications
 permalink: /publication/2022-raptis
 date: 2022-02-01
