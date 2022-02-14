@@ -14,4 +14,4 @@ Resolution OMNI (HRO) Data.
 Front. Astron. Space Sci. 7:24.
 doi: 10.3389/fspas.2020.00024 '
 ---
-**Editorial E-book** : [Research Topic: Machine Learning in Heliophysics](/files/papers/2020/9782889716715.pdf)
+**Editorial E-book** : [Research Topic: Machine Learning in Heliophysics](/files/papers/2020/9782889716715.PDF)

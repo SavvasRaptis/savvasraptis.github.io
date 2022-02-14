@@ -11,4 +11,4 @@ Statistics in the Magnetosheath.
 Front. Astron. Space Sci. 7:2.
 doi: 10.3389/fspas.2020.00002'
 ---
-**Editorial E-book** :  [Research Topic: Improving the Understanding of Kinetic Processes in Solar Wind and Magnetosphere: From CLUSTER to MMS](/files/papers/2020/9782889662418.pdf)
+**Editorial E-book** :  [Research Topic: Improving the Understanding of Kinetic Processes in Solar Wind and Magnetosphere: From CLUSTER to MMS](/files/papers/2020/9782889662418.PDF)
