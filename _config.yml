@@ -62,7 +62,7 @@ facebook:
   username               :
   app_id                 :
   publisher              :
-og_image                 : Savvas2.png # Open Graph/Twitter default site image
+og_image                 : Savvas2.jpg # Open Graph/Twitter default site image
 # For specifying social profiles
 # - https://developers.google.com/structured-data/customize/social-profiles
 social:
@@ -81,7 +81,7 @@ analytics:
 # Site Author
 author:
   name             : "Savvas"
-  avatar           : "Savvas2.png"
+  avatar           : "Savvas2.jpg"
   bio              : "PhD | Space & Plasma Physics and Machine Learning Applications"
   location         : "Stockholm, SE"
   employer         : #"KTH"
@@ -115,8 +115,6 @@ author:
   xing             :
   youtube          :
   wikipedia        :
-
-
 
 # Reading Files
 include:
