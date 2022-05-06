@@ -7,7 +7,8 @@ order_number: 20
 header:
   og_image: "What_is_ml.jpg"
 ---
-  ## Article
+
+## Article
 
   Machine learning is the field of computer science that studies algorithms capable of "learning" without having been explicitly programmed with specific rules. In other words, these algorithms use data to discover patterns and relationships in order to make predictions or decisions. References to machine learning date back to the 1960s, although the actual use of these techniques increased rapidly after the 1990s as a result of the development of other computer science disciplines such as file digitization, data mining and supercomputers.
 
