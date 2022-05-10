@@ -1,6 +1,6 @@
 ---
 title: "Investigation of Different Types of Magnetosheath jets and Their Origin using MMS"
-collection: talks
+collection: hidden
 type: "(<b>Invited</b>) Oral presentation"
 permalink: /talks/2021-01-19-talk-mini-GEM
 venue: "mini-GEM Dayside Kinetic Group"
