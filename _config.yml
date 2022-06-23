@@ -7,7 +7,7 @@
 
 # Site Settings
 locale                   : "en-US"
-title                    : "Savvas Raptis / Personal Site"
+title                    : "Savvas Raptis"
 title_separator          : "-"
 name                     : &name "Savvas Raptis"
 description              : &description "PhD in Space & Plasma Physics"
