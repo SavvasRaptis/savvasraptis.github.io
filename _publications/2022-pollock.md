@@ -1,5 +1,5 @@
 ---
-title: " Dynamics of Earth’s bow shock under near-radial interplanetary magnetic field conditions"
+title: "Dynamics of Earth’s bow shock under near-radial interplanetary magnetic field conditions"
 collection: publications
 permalink: /publication/2022-pollock
 date: 2022-07-01
