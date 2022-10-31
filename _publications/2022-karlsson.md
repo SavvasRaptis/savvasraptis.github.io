@@ -2,7 +2,7 @@
 title: "Solar wind magnetic holes can cross the bow shock and enter the magnetosheath"
 collection: publications
 permalink: /publication/2022-karlsson-b
-date: 2022-08-03
+date: 2022-12-03
 venue: 'Annales Geophysicae (ANGEO)'
 paperurl: 'http://savvasraptis.github.io/publications'
 link: 'http://savvasraptis.github.io/publications'
