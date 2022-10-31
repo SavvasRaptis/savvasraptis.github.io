@@ -2,9 +2,9 @@
 title: "On Magnetosheath Jet Kinetic Structure and Plasma Properties"
 collection: publications
 permalink: /publication/2022-raptis-b
-date: 2022-08-01
+date: 2022-10-29
 venue: 'Geophysical Research Letters (GRL)'
-paperurl: 'http://savvasraptis.github.io/publications'
-link: 'http://savvasraptis.github.io/publications'
-citation: '<b>Raptis, S.</b>, Karlsson, T., Vaivads, A., Lindberg, M., Johlander, A., & Trollvik, H. (2022). On Magnetosheath Jet Kinetic Structure and Plasma Properties. Geophysical Research Letters, (<b>under review</b>)'
+paperurl: '/files/papers/2022/Geophysical Research Letters - 2022 - Raptis - On Magnetosheath Jet Kinetic Structure and Plasma Properties.pdf'
+link: 'https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2022GL100678'
+citation: '<b>Raptis, S.</b>, Karlsson, T., Vaivads, A., Lindberg, M., Johlander, A., & Trollvik, H. (2022). On magnetosheath jet kinetic structure and plasma properties. Geophysical Research Letters, 49, e2022GL100678. https://doi.org/10.1029/2022GL100678'
 ---
