@@ -10,10 +10,10 @@ locale                   : "en-US"
 title                    : "Savvas Raptis"
 title_separator          : "-"
 name                     : &name "Savvas Raptis"
-description              : &description "PhD in Space & Plasma Physics"
+description              : &description "Researcher in Space & Plasma Physics"
 url                      : https://savvasraptis.github.io/ # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
 baseurl                  : "" # the subpath of your site, e.g. "/blog"
-repository               : "academicpages/academicpages.github.io"
+repository               : "https://github.com/SavvasRaptis/savvasraptis.github.io"
 teaser                   : "500x300.png" # filename of teaser fallback teaser image placed in /images/, .e.g. "500x300.png"
 breadcrumbs              : false # true, false (default)
 words_per_minute         : 160
