@@ -5,11 +5,15 @@ title: "Teaching"
 
 ## KTH Royal Institute of Technology
 
+- Collisionless shocks - Workshop (PhD)
+	- Guest Lecturer (Q1 2022)
 - EF2240 : Space Physics I (Master)
+	- Teaching Assistant & Guest Lecturer (Q1 2022)
 	- Teaching Assistant & Guest Lecturer (Q1 2021)
 	- Teaching Assistant (Q1 2020)
 - EI1110 : Electrical Circuit Analysis (Bachelor)
-	- Teaching Assistant (Q3 2021 - 2022)
+	- Teaching Assistant (Q3 2022 )
+	- Teaching Assistant (Q3 2021)
 - EI2405 : Classical Electrodynamics (Bachelor)
 	- Teaching Assistant (Q3 2019)
 - EF112X : LaTeX workshop (Bachelor)
