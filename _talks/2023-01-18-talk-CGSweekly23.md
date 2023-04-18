@@ -7,5 +7,5 @@ venue: "CGS weekly meetings"
 date: 2023-01-18
 location: "Laurel, US"
 paperurl: "/files/presentations/2023/CGStalks23_talk.pdf"
-ppt: "/files/presentations/2023/CGStalks23_talk.pptx
+ppt: "/files/presentations/2023/CGStalks23_talk.pptx"
 ---
