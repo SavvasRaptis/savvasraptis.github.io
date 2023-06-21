@@ -8,6 +8,6 @@ redirect_from:
   - /about.html
 ---
 
-Welcome to my site! My name is Savvas and I am currently a postdoctoral researcher at KTH, Royal Institute of Technology. 
+Hello and welcome to my site! My name is Savvas and I am currently a postdoctoral researcher at Johns Hopkins University, Applied Physics Laboratory at the Space Exploration Sector. 
 
-My research interests are in the broader area of Space & Plasma Physics, Space Weather and Machine Learning applications.
+My research interests are in the broader area of Space Plasma Physics, Space Weather and on Machine Learning applications.
