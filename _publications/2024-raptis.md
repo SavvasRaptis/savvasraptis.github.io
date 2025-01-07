@@ -8,3 +8,4 @@ paperurl: '/files/papers/2024/Geophysical Research Letters - 2024 - Raptis - Pla
 link: 'https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2024GL110839'
 citation: " <b>Raptis, S. </b>, Merkin, V., Ohtani, S., Gkioulidou, M., & Regoli, L. H. (2024). Plasma sheet magnetic flux transport during geomagnetic storms. Geophysical Research Letters, 51, e2024GL110839. https://doi.org/10.1029/2024GL110839"
 ---
+**1-page Summary** :  [1-page Summary Highlight](https://savvasraptis.github.io/files/papers/2024/Science_highlight_MMS_Raptis24GRL.pdf)
