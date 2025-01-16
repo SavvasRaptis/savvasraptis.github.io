@@ -1,5 +1,5 @@
 ---
-title: "Downstream high-speed plasma jet generation as a direct consequence of shock reformation"
+title: "Revealing an unexpectedly low electron injection threshold via reinforced shock acceleration"
 collection: publications
 permalink: /publication/2025-raptis-a
 date: 2025-01-13
