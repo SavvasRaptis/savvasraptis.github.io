@@ -19,11 +19,12 @@ layout: default
       <div class="profile float-{% if page.profile.align == 'left' %}left{% else %}right{% endif %}">
         {% if page.profile.image %}
           {% assign profile_image_path = page.profile.image | prepend: 'assets/img/' %}
-          {% if page.profile.image_circular %}
+          {% if page.profile.image_ellipse %}
+            {% assign profile_image_class = 'img-fluid z-depth-1 profile-image-ellipse' %}
+          {% elsif page.profile.image_circular %}
             {% assign profile_image_class = 'img-fluid z-depth-1 rounded-circle' %}
           {% else %}
-            {% assign profile_image_class = 'img-fluid z-depth-1
-      rounded' %}
+            {% assign profile_image_class = 'img-fluid z-depth-1 rounded' %}
           {% endif %}
           {% capture sizes %}(min-width: {{ site.max_width }}) {{ site.max_width | minus: 30 | times: 0.3}}px, (min-width: 576px)
       30vw, 95vw"{% endcapture %}
@@ -34,6 +35,44 @@ layout: default
         {% endif %}
         {% if page.profile.more_info %}
           <div class="more-info">{{ page.profile.more_info }}</div>
+        {% endif %}
+        {% if page.social %}
+          {% assign social_data = site.data.socials %}
+          <div class="about-profile-icons" aria-label="Profile links">
+            {% if social_data.email %}
+              <a href="mailto:{{ social_data.email | encode_email }}" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+            {% endif %}
+            {% if social_data.orcid_id %}
+              <a href="https://orcid.org/{{ social_data.orcid_id }}" target="_blank" rel="noopener noreferrer" aria-label="ORCID">
+                <i class="ai ai-orcid"></i>
+              </a>
+            {% endif %}
+            {% if social_data.linkedin_username %}
+              <a href="https://www.linkedin.com/in/{{ social_data.linkedin_username }}" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+                <i class="fa-brands fa-linkedin"></i>
+              </a>
+            {% endif %}
+            {% if social_data.research_gate_profile %}
+              <a href="https://www.researchgate.net/profile/{{ social_data.research_gate_profile }}/" target="_blank" rel="noopener noreferrer" aria-label="ResearchGate">
+                <i class="ai ai-researchgate"></i>
+              </a>
+            {% endif %}
+            {% if social_data.scholar_userid %}
+              <a
+                href="https://scholar.google.com/citations?user={{ social_data.scholar_userid }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Google Scholar"
+              >
+                <i class="ai ai-google-scholar"></i>
+              </a>
+            {% endif %}
+            {% if social_data.bluesky_url %}
+              <a href="{{ social_data.bluesky_url }}" target="_blank" rel="noopener noreferrer" aria-label="Bluesky">
+                <i class="fa-brands fa-bluesky"></i>
+              </a>
+            {% endif %}
+          </div>
         {% endif %}
       </div>
     {% endif %}
@@ -61,14 +100,63 @@ layout: default
       <h2>
         <a href="{{ '/publications/' | relative_url }}" style="color: inherit">selected publications</a>
       </h2>
-      {% include selected_papers.liquid %}
+      <div class="selected-publications-preview">
+        {% include selected_papers.liquid %}
+      </div>
     {% endif %}
 
     <!-- Social -->
     {% if page.social %}
-      <div class="social">
-        <div class="contact-icons">{% include social.liquid %}</div>
-
+      {% assign social_data = site.data.socials %}
+      <div class="social social-about">
+        <div class="contact-icons contact-icons-primary">
+          {% if social_data.email %}
+            <a href="mailto:{{ social_data.email | encode_email }}" title="email"><i class="fa-solid fa-envelope"></i></a>
+          {% endif %}
+          {% if social_data.orcid_id %}
+            <a href="https://orcid.org/{{ social_data.orcid_id }}" target="_blank" rel="noopener noreferrer" title="ORCID"><i class="ai ai-orcid"></i></a>
+          {% endif %}
+          {% if social_data.scholar_userid %}
+            <a
+              href="https://scholar.google.com/citations?user={{ social_data.scholar_userid }}"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Google Scholar"
+            >
+              <i class="ai ai-google-scholar"></i>
+            </a>
+          {% endif %}
+          {% if social_data.linkedin_username %}
+            <a href="https://www.linkedin.com/in/{{ social_data.linkedin_username }}" target="_blank" rel="noopener noreferrer" title="LinkedIn">
+              <i class="fa-brands fa-linkedin"></i>
+            </a>
+          {% endif %}
+          {% if social_data.research_gate_profile %}
+            <a
+              href="https://www.researchgate.net/profile/{{ social_data.research_gate_profile }}/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="ResearchGate"
+            >
+              <i class="ai ai-researchgate"></i>
+            </a>
+          {% endif %}
+          {% if social_data.bluesky_url %}
+            <a href="{{ social_data.bluesky_url }}" target="_blank" rel="noopener noreferrer" title="Bluesky">
+              <i class="fa-brands fa-bluesky"></i>
+            </a>
+          {% endif %}
+        </div>
+        <div class="contact-icons contact-icons-secondary">
+          {% if social_data.work_url %}
+            <a href="{{ social_data.work_url }}" target="_blank" rel="noopener noreferrer" title="Work">
+              <i class="fa-solid fa-briefcase"></i>
+            </a>
+          {% endif %}
+          {% if social_data.rss_icon == true %}
+            <a href="{{ site.baseurl }}/feed.xml" title="RSS Feed"><i class="fa-solid fa-square-rss"></i></a>
+          {% endif %}
+        </div>
         <div class="contact-note">{{ site.contact_note }}</div>
       </div>
     {% endif %}

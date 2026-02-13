@@ -2,11 +2,41 @@
 layout: page
 permalink: /teaching/
 title: teaching
-description: Materials for courses you taught. Replace this text with your description.
+description: Courses taught, guest lectures, and training material.
 nav: true
-nav_order: 6
+nav_order: 5
 ---
 
-For now, this page is assumed to be a static description of your courses. You can convert it to a collection similar to `_projects/` so that you can have a dedicated page for each course.
+## KTH Royal Institute of Technology
 
-Organize your courses by years, topics, or universities, however you like!
+- Collisionless shocks - Workshop (PhD)
+  - Guest Lecturer (Q1 2022)
+- EF2240 : Space Physics I (Master)
+  - Guest Lecturer (Q1 2023)
+  - Teaching Assistant and Guest Lecturer (Q1 2022)
+  - Teaching Assistant and Guest Lecturer (Q1 2021)
+  - Teaching Assistant (Q1 2020)
+- EI1110 : Electrical Circuit Analysis (Bachelor)
+  - Teaching Assistant (Q3 2022)
+  - Teaching Assistant (Q3 2021)
+- EI2405 : Classical Electrodynamics (Bachelor)
+  - Teaching Assistant (Q3 2019)
+- EF112X : LaTeX workshop (Bachelor)
+  - Teaching Assistant (Q4 2019 - 2022)
+
+## Social Tuition Center of City of Athens
+
+- Specialized Topics in Physics: Mechanics, Oscillations, and Waves (High School)
+  - Teacher (2013 - 2015)
+
+Extended information with a short syllabus and role descriptions for each course is available in the PDF.
+
+The guest lecture topics include:
+
+- Applied Machine Learning in Heliophysics: 1 hour theory + 1 hour hands-on applications
+- Multi-Spacecraft Techniques and Collisionless Shocks: 2 hours theory + 2 hours hands-on applications, including assignments
+
+A PDF copy of my teaching experience is available here:
+<a href="/files/teaching/Teaching_Experience.pdf" target="_blank" rel="noopener noreferrer" aria-label="Download teaching experience PDF">
+  <i class="fa-solid fa-file-arrow-down"></i> Download Teaching Experience (PDF)
+</a>

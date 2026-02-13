@@ -1,9 +1,10 @@
-"AJP":
-  url: https://aapt.scitation.org/journal/ajp
+"GRL":
+  url: https://agupubs.onlinelibrary.wiley.com/journal/19448007
   color: "#00369f"
 
-"PhysRev":
-  url: https://journals.aps.org/
+"ApJL":
+  url: htthttps://iopscience.iop.org/journal/2041-8205
 
-"Vision":
+"Nat. Commun":
+  url: https://www.nature.com/ncomms/
   color: "#009f36"

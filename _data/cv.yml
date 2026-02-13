@@ -2,96 +2,78 @@
   type: map
   contents:
     - name: Full Name
-      value: Albert Einstein
-    - name: Date of Birth
-      value: 14th March 1879
-    - name: Languages
-      value: English, German
+      value: Savvas Raptis
+    - name: Current Role
+      value: Researcher, Space Exploration Sector, Johns Hopkins University Applied Physics Laboratory
+    - name: Location
+      value: Maryland, USA
+    - name: Research Areas
+      value: Space and plasma physics, heliophysics, space weather, machine learning for space science
+
+- title: Research Appointments
+  type: time_table
+  contents:
+    - title: Researcher
+      institution: Johns Hopkins University Applied Physics Laboratory, Laurel, Maryland, USA
+      year: Jun 2023 - Present
+    - title: Visiting Researcher
+      institution: European Space Agency (ESA-ESTEC), Leiden, Netherlands
+      year: Jan 2023 - Apr 2023
+    - title: Postdoctoral Researcher
+      institution: KTH Royal Institute of Technology, Stockholm, Sweden
+      year: Nov 2022 - May 2023
+    - title: PhD Researcher
+      institution: KTH Royal Institute of Technology, Stockholm, Sweden
+      year: Oct 2018 - Nov 2022
 
 - title: Education
   type: time_table
   contents:
-    - title: PhD
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1905
+    - title: PhD, Electrical Engineering (Space Plasma Physics)
+      institution: KTH Royal Institute of Technology, Stockholm, Sweden
+      year: 2022
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
-          contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Federal teaching diploma
-      institution: Eidgenössische Technische Hochschule, Zurich, Switzerland
-      year: 1900
+        - "Thesis: <a href='/files/theses/PhD/PhDthesis.pdf'>High-speed jets and related phenomena at Earth's bow shock and magnetosheath</a>"
+    - title: MSc, Astronomy and Astrophysics
+      institution: KU Leuven, Leuven, Belgium
+      year: 2018
       description:
-        - Description 1.
-        - Description 2.
-
-- title: Experience
-  type: time_table
-  contents:
-    - title: Professor of Theoretical Physics
-      institution: Institute for Advanced Study, Princeton University
-      year: 1933 - 1955
+        - "Thesis: <a href='/files/theses/Master/MasterThesis_Savvas.pdf'>Processing Solar Images to Forecast Coronal Mass Ejections using Artificial Intelligence</a>"
+    - title: BSc, Physics
+      institution: National and Kapodistrian University of Athens, Athens, Greece
+      year: 2016
       description:
-        - Description 1.
-        - Description 2.
-        - title: Description 3.
-          contents:
-            - Sub-description 1.
-            - Sub-description 2.
-    - title: Visiting Professor
-      institution: California Institute of Technology, Pasadena, California, US
-      year: 1933
-      description:
-        - Description 1.
-        - Description 2.
+        - "Thesis: Solar Energetic Particles: a study of their properties through ESA SREM measurements"
 
-    - title: Director
-      institution: Kaiser Wilhelm Institute for Physics, Berlin, Germany.
-      year: 1917-1933
-
-    - title: Professor of Theoretical Physics
-      institution: Karl-Ferdinand University, Prague, Czechoslovakia
-      year: 1911 - 1917
-      description:
-
-    - title: Associate Professor of Theoretical Physics
-      institution: University of Zurich, Zurich, Switzerland
-      year: 1909 - 1911
-
-- title: Open Source Projects
-  type: time_table
-  contents:
-    - title: <a href="https://github.com/alshedivat/al-folio">al-folio</a>
-      year: 2015-now
-      description: A beautiful, simple, clean, and responsive Jekyll theme for academics.
-
-- title: Honors and Awards
-  type: time_table
-  contents:
-    - year: 1921
-      items:
-        - Nobel Prize in Physics
-        - Matteucci Medal
-    - year: 2029
-      items:
-        - Max Planck Medal
-
-- title: Academic Interests
-  type: nested_list
-  contents:
-    - title: Topic 1.
-      items:
-        - Description 1.
-        - Description 2.
-    - title: Topic 2.
-      items:
-        - Description 1.
-        - Description 2.
-
-- title: Other Interests
+- title: Leadership and Supervision
   type: list
   contents:
-    - <u>Hobbies:</u> Hobby 1, Hobby 2, etc.
+    - "2025-2029: NSF GEM Focus Group Leader (Multiscale Dayside Transients and their effect on Earth's magnetosphere)."
+    - "2024-Present: Chair, AGU SPA Early Career Leadership Advisory Committee (EC-LAC)."
+    - "2023-Present: Organizer/convener/chair roles across AGU, EGU, MMS community workshop, and LMAG workshops."
+    - "Mentoring and co-supervision activities at AGU, GEM, EGU, JHU/APL internship programs, and graduate co-supervision."
+
+- title: Service and Reviewing
+  type: list
+  contents:
+    - "Science/working-team roles: IMAP, MMS (SWT/EPD/EDP), SMILE, Plasma Observatory, and Center for Geospace Storms."
+    - "Grant reviewer for NASA Heliophysics programs (HSR, HGIO, LWS)."
+    - "Editorial board roles: Discover Space (Springer Nature) and Frontiers in Astronomy and Space Sciences."
+    - "Reviewer for major journals including Science Advances, PRL, AGU journals, ApJ, A&A, Annales Geophysicae, and others."
+    - "Conference judging service for AGU/EGU/GEM/TESS student presentation programs."
+
+- title: Contact and Profiles
+  type: map
+  contents:
+    - name: Email
+      value: savvas.raptis@jhuapl.edu
+    - name: Website
+      value: <a href="https://savvasraptis.github.io">savvasraptis.github.io</a>
+    - name: Google Scholar
+      value: <a href="https://scholar.google.com/citations?user=PNW-OJEAAAAJ">PNW-OJEAAAAJ</a>
+    - name: ORCID
+      value: <a href="https://orcid.org/0000-0002-4381-3197">0000-0002-4381-3197</a>
+    - name: LinkedIn
+      value: <a href="https://www.linkedin.com/in/savvas-raptis">savvas-raptis</a>
+    - name: GitHub
+      value: <a href="https://github.com/SavvasRaptis">SavvasRaptis</a>

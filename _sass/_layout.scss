@@ -38,16 +38,500 @@ body.sticky-bottom-footer {
   }
 }
 
+.profile img.profile-image-ellipse {
+  aspect-ratio: 4 / 5;
+  border: 1px solid var(--global-divider-color);
+  border-radius: 50%;
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--global-text-color) 10%, transparent);
+  object-fit: cover;
+}
+
+.about-profile-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+}
+
+.about-profile-icons a {
+  align-items: center;
+  border: 1px solid var(--global-divider-color);
+  border-radius: 999px;
+  color: var(--global-text-color);
+  display: inline-flex;
+  font-size: 0.92rem;
+  height: 1.85rem;
+  justify-content: center;
+  text-decoration: none;
+  width: 1.85rem;
+}
+
+.about-profile-icons a:hover {
+  border-color: var(--global-theme-color);
+  color: var(--global-theme-color);
+  text-decoration: none;
+}
+
+.social-about {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+}
+
+.social-about .contact-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.social-about .contact-icons-secondary {
+  margin-left: auto;
+}
+
+.social-about .contact-note {
+  flex-basis: 100%;
+}
+
+@media (max-width: 900px) {
+  .social-about .contact-icons-secondary {
+    margin-left: 0;
+  }
+}
+
 // TODO: redefine content layout.
 
 /******************************************************************************
  * Publications
  ******************************************************************************/
 
-// TODO: redefine publications layout.
+.bib-highlights {
+  margin-top: 0.45rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.bib-highlights .highlight-chip {
+  border: 1px solid var(--global-divider-color);
+  border-radius: 999px;
+  color: var(--global-text-color);
+  font-size: 0.76rem;
+  line-height: 1.2;
+  padding: 0.18rem 0.62rem;
+  text-transform: none;
+}
+
+.bib-highlights .highlight-chip:hover {
+  border-color: var(--global-theme-color);
+}
+
+.bib-highlights .highlight-chip-static {
+  cursor: default;
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.selected-publications-preview .selected-publications-list ol.bibliography {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.selected-publications-preview .selected-publications-list ol.bibliography li {
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+.selected-paper-card {
+  background: var(--global-bg-color);
+  border: 1px solid var(--global-divider-color);
+  border-radius: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  height: 100%;
+  padding: 0.85rem 0.9rem;
+}
+
+.selected-paper-title {
+  font-size: 0.98rem;
+  line-height: 1.33;
+  margin: 0;
+}
+
+.selected-paper-authors {
+  color: var(--global-text-color-light);
+  font-size: 0.83rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.selected-paper-meta {
+  color: var(--global-text-color-light);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.selected-paper-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+}
+
+.selected-paper-links .btn {
+  border: 1px solid var(--global-divider-color);
+  color: var(--global-text-color);
+  font-size: 0.72rem;
+  line-height: 1.15;
+  padding: 0.18rem 0.5rem;
+}
+
+.selected-paper-card .bib-highlights {
+  margin-top: 0.15rem;
+}
+
+.selected-paper-card .highlight-chip {
+  font-size: 0.71rem;
+  padding: 0.16rem 0.5rem;
+}
+
+.selected-paper-badges {
+  margin-top: 0.2rem;
+}
+
+.publications-page {
+  display: grid;
+  gap: 1.6rem;
+  grid-template-columns: minmax(190px, 230px) minmax(0, 1fr);
+}
+
+.publications-sidebar {
+  align-self: start;
+  position: sticky;
+  top: 82px;
+}
+
+.publications-sidebar-inner {
+  border: 1px solid var(--global-divider-color);
+  border-radius: 0.75rem;
+  padding: 0.9rem;
+}
+
+.publications-filter-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.35rem;
+}
+
+.publications-search-input {
+  border: 1px solid var(--global-divider-color);
+  border-radius: 0.5rem;
+  color: var(--global-text-color);
+  font-size: 0.88rem;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem 0.55rem;
+  width: 100%;
+}
+
+.publication-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.8rem;
+}
+
+.publication-chip {
+  background: transparent;
+  border: 1px solid var(--global-divider-color);
+  border-radius: 999px;
+  color: var(--global-text-color-light);
+  cursor: pointer;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.3rem 0.58rem;
+}
+
+.publication-chip.is-active {
+  background: var(--global-theme-color);
+  border-color: var(--global-theme-color);
+  color: var(--global-card-bg-color);
+}
+
+.publications-years-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.publications-year-link {
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  color: var(--global-text-color-light);
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.16rem 0.45rem;
+  text-align: left;
+}
+
+.publications-year-link.is-active {
+  border-left-color: var(--global-theme-color);
+  color: var(--global-text-color);
+  font-weight: 600;
+}
+
+.publications-results-count {
+  color: var(--global-text-color-light);
+  font-size: 0.8rem;
+  margin: 0.8rem 0 0;
+}
+
+.publications-main {
+  min-width: 0;
+}
+
+.publications-main .publication-row {
+  border-bottom: 1px solid var(--global-divider-color);
+  margin-bottom: 0.95rem;
+  padding-bottom: 0.95rem;
+}
+
+.publications-main li:last-child .publication-row {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.publications .citation.hidden {
+  border: 1px dashed var(--global-bg-color);
+}
+
+.publications .citation.hidden.open {
+  border-color: var(--global-theme-color);
+}
+
+.citation-label {
+  color: var(--global-text-color-light);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0.55rem 0 0.2rem 0.65rem;
+  text-transform: uppercase;
+}
+
+.citation-label-bibtex {
+  margin-top: 0.35rem;
+}
+
+.citation-apa {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  margin: 0 0.65rem 0.5rem;
+  text-align: left;
+}
+
+.citation-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0 0.65rem 0.4rem;
+}
+
+.citation-actions .btn {
+  border: 1px solid var(--global-divider-color);
+  color: var(--global-text-color);
+  cursor: pointer;
+  font-size: 0.73rem;
+  line-height: 1.2;
+  padding: 0.2rem 0.55rem;
+}
+
+.copy-feedback {
+  color: var(--global-theme-color);
+  font-size: 0.78rem;
+  min-height: 1rem;
+}
+
+.citation-bibtex {
+  font-size: 0.78rem;
+  margin: 0 0.65rem 0.6rem;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 900px) {
+  .selected-publications-preview .selected-publications-list ol.bibliography {
+    grid-template-columns: 1fr;
+  }
+
+  .publications-page {
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  .publications-sidebar {
+    position: static;
+    top: auto;
+  }
+
+  .publications-sidebar-inner {
+    padding: 0.75rem;
+  }
+
+  .publications-years-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+  }
+
+  .publications-year-link {
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .publications-year-link.is-active {
+    border-color: var(--global-theme-color);
+  }
+}
 
 /*****************************************************************************
 * Projects
 *****************************************************************************/
 
 // TODO: redefine projects layout.
+
+/******************************************************************************
+ * Presentations
+ ******************************************************************************/
+
+.talks-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.talks-page.talks-page-with-filters {
+  display: grid;
+  gap: 1.6rem;
+  grid-template-columns: minmax(190px, 230px) minmax(0, 1fr);
+}
+
+.talks-main {
+  min-width: 0;
+}
+
+.talk-year-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.talk-year {
+  border-bottom: 1px solid var(--global-divider-color);
+  color: var(--global-text-color);
+  font-size: 1.25rem;
+  margin: 0;
+  padding-bottom: 0.35rem;
+}
+
+.talk-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.talk-card {
+  background: var(--global-bg-color);
+  border: 1px solid var(--global-divider-color);
+  border-radius: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem;
+}
+
+.talk-title {
+  font-size: 1.02rem;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.talk-heading {
+  align-items: center;
+  display: flex;
+  gap: 0.55rem;
+  justify-content: space-between;
+}
+
+.talk-badge {
+  border-radius: 999px;
+  font-size: 0.69rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 0.25rem 0.5rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.talk-badge.invited {
+  background: color-mix(in srgb, var(--global-theme-color) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--global-theme-color) 70%, white);
+  color: var(--global-theme-color);
+}
+
+.talk-badge.seminar {
+  background: color-mix(in srgb, var(--global-text-color-light) 14%, transparent);
+  border: 1px solid var(--global-divider-color);
+  color: var(--global-text-color);
+}
+
+.talk-meta {
+  color: var(--global-text-color-light);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.talk-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.2rem;
+}
+
+.talk-link {
+  border: 1px solid var(--global-divider-color);
+  border-radius: 999px;
+  color: var(--global-text-color);
+  font-size: 0.8rem;
+  line-height: 1.2;
+  padding: 0.2rem 0.65rem;
+  text-decoration: none;
+}
+
+.talk-link:hover {
+  border-color: var(--global-theme-color);
+  text-decoration: none;
+}
+
+@media (max-width: 640px) {
+  .talk-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 900px) {
+  .talks-page.talks-page-with-filters {
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+}

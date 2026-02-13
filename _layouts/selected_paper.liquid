@@ -1,0 +1,104 @@
+---
+---
+{% assign author_count = entry.author_array | size %}
+<article class="selected-paper-card">
+  <h3 class="selected-paper-title">{{ entry.title }}</h3>
+
+  <p class="selected-paper-authors">
+    {% for author in entry.author_array limit: 5 %}
+      {{ author.first }} {{ author.last | regex_replace: '[*∗†‡§¶‖&^]', '' }}{% unless forloop.last %}, {% endunless %}
+    {% endfor %}
+    {% if author_count > 5 %}, et al.{% endif %}
+  </p>
+
+  <p class="selected-paper-meta">
+    {% if entry.journal %}<em>{{ entry.journal }}</em>{% elsif entry.booktitle %}<em>{{ entry.booktitle }}</em>{% endif %}
+    {% if entry.year %} ({{ entry.year }}){% endif %}
+  </p>
+
+  <div class="selected-paper-links">
+    {% if entry.award %}
+      <a class="award btn btn-sm z-depth-0" role="button">
+        {%- if entry.award_name %}{{ entry.award_name }}{% else %}Awarded{% endif -%}
+      </a>
+    {% endif %}
+    {% if entry.doi %}
+      <a href="https://doi.org/{{ entry.doi }}" class="btn btn-sm z-depth-0" role="button">DOI</a>
+    {% endif %}
+    {% if entry.pdf %}
+      {% assign selected_pdf_url = entry.pdf %}
+      {% if selected_pdf_url contains '://' %}
+        <a href="{{ selected_pdf_url }}" class="btn btn-sm z-depth-0" role="button">PDF</a>
+      {% elsif selected_pdf_url contains '/files/' %}
+        <a href="{{ selected_pdf_url | replace: ' ', '%20' | relative_url }}" class="btn btn-sm z-depth-0" role="button">PDF</a>
+      {% else %}
+        <a href="{{ selected_pdf_url | prepend: '/assets/pdf/' | relative_url }}" class="btn btn-sm z-depth-0" role="button">PDF</a>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% if entry.award %}
+    <div class="award hidden">
+      <p>{{ entry.award | markdownify }}</p>
+    </div>
+  {% endif %}
+
+  {% if entry.highlights %}
+    <div class="bib-highlights">
+      {% assign highlights = entry.highlights | split: '||' %}
+      {% for highlight in highlights %}
+        {% assign highlight_text = highlight | strip %}
+        {% assign highlight_label = highlight_text %}
+        {% assign highlight_url = '' %}
+        {% if highlight_text contains '::' %}
+          {% assign highlight_parts = highlight_text | split: '::' %}
+          {% assign highlight_label = highlight_parts | first | strip %}
+          {% assign highlight_url = highlight_parts | last | strip %}
+        {% endif %}
+        {% if highlight_label != blank %}
+          {% if highlight_url != blank %}
+            {% if highlight_url contains '/files/' %}
+              {% if highlight_url contains '://' %}
+                <a class="highlight-chip btn btn-sm z-depth-0" href="{{ highlight_url | replace: ' ', '%20' }}" role="button">{{ highlight_label }}</a>
+              {% else %}
+                <a class="highlight-chip btn btn-sm z-depth-0" href="{{ highlight_url | replace: ' ', '%20' | relative_url }}" role="button">{{ highlight_label }}</a>
+              {% endif %}
+            {% else %}
+              <a class="highlight-chip btn btn-sm z-depth-0" href="{{ highlight_url | replace: ' ', '%20' }}" role="button">{{ highlight_label }}</a>
+            {% endif %}
+          {% else %}
+            <span class="highlight-chip highlight-chip-static btn btn-sm z-depth-0">{{ highlight_label }}</span>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% assign selected_has_altmetric_badge = false %}
+  {% if entry.altmetric != 'false' %}
+    {% if entry.altmetric or entry.arxiv or entry.eprint or entry.doi or entry.pmid or entry.isbn %}
+      {% assign selected_has_altmetric_badge = true %}
+    {% endif %}
+  {% endif %}
+  {% if site.enable_publication_badges.altmetric and selected_has_altmetric_badge %}
+    <div class="badges selected-paper-badges">
+      <span
+        class="altmetric-embed"
+        data-badge-type="2"
+        data-badge-popover="right"
+        {% if entry.altmetric != blank and entry.altmetric != 'true' %}
+          data-altmetric-id="{{ entry.altmetric }}"
+        {% elsif entry.arxiv %}
+          data-arxiv-id="{{ entry.arxiv }}"
+        {% elsif entry.eprint %}
+          data-arxiv-id="{{ entry.eprint }}"
+        {% elsif entry.doi %}
+          data-doi="{{ entry.doi }}"
+        {% elsif entry.pmid %}
+          data-pmid="{{ entry.pmid }}"
+        {% elsif entry.isbn %}
+          data-isbn="{{ entry.isbn }}"
+        {% endif %}
+      ></span>
+    </div>
+  {% endif %}
+</article>
