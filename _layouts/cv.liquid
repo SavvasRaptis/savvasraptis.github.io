@@ -6,18 +6,23 @@ layout: default
     <h1 class="post-title">
       {{ page.title }}
       {% if page.cv_pdf %}
-        <a
-          {% if page.cv_pdf contains '://' %}
-            href="{{ page.cv_pdf }}"
-          {% else %}
-            href="{{ page.cv_pdf | prepend: 'assets/pdf/' | relative_url }}"
-          {% endif %}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="float-right"
-        >
-          <i class="fa-solid fa-file-pdf"></i>
-        </a>
+        <span class="float-right cv-pdf-access">
+          <span class="cv-pdf-label">Full CV PDF</span>
+          <a
+            {% if page.cv_pdf contains '://' %}
+              href="{{ page.cv_pdf }}"
+            {% else %}
+              href="{{ page.cv_pdf | prepend: 'assets/pdf/' | relative_url }}"
+            {% endif %}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="cv-pdf-icon-link"
+            aria-label="Open full CV PDF"
+            title="Open full CV PDF"
+          >
+            <i class="fa-solid fa-file-pdf"></i>
+          </a>
+        </span>
       {% endif %}
     </h1>
     {% if page.description %}

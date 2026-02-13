@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: Researcher in Space and Plasma Physics
+subtitle: Researcher in Heliophysics & Plasma Physics
 
 profile:
   align: right
@@ -28,7 +28,7 @@ latest_posts:
   limit: 0
 ---
 
-I am a researcher in space and plasma physics at the Johns Hopkins University Applied Physics Laboratory (Space Exploration Sector), where I study how plasma processes shape space weather and heliophysical environments.
+I am a researcher in plasma physics at the Johns Hopkins University Applied Physics Laboratory (Space Exploration Sector), focusing on experimental heliohpysics, statistical modeling, and spacecraft data analysis.
 
 My research focuses on key areas of heliophysics, astrophysics, and plasma physics, including collisionless shock dynamics, particle acceleration, space weather, and localized transient processes in near-Earth and planetary systems.
 

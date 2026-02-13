@@ -191,6 +191,10 @@ body.sticky-bottom-footer {
   padding: 0.18rem 0.5rem;
 }
 
+.selected-paper-links a.award.btn {
+  border-color: var(--global-highlight-color);
+}
+
 .selected-paper-card .bib-highlights {
   margin-top: 0.15rem;
 }
@@ -293,6 +297,33 @@ body.sticky-bottom-footer {
   margin: 0.8rem 0 0;
 }
 
+.publications-profile-links {
+  align-items: center;
+  border-top: 1px solid var(--global-divider-color);
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+}
+
+.publications-profile-links a {
+  align-items: center;
+  border: 1px solid var(--global-divider-color);
+  border-radius: 999px;
+  color: var(--global-text-color);
+  display: inline-flex;
+  font-size: 0.86rem;
+  height: 1.75rem;
+  justify-content: center;
+  text-decoration: none;
+  width: 1.75rem;
+}
+
+.publications-profile-links a:hover {
+  border-color: var(--global-theme-color);
+  color: var(--global-theme-color);
+}
+
 .publications-main {
   min-width: 0;
 }
@@ -385,6 +416,12 @@ body.sticky-bottom-footer {
     padding: 0.75rem;
   }
 
+  .publications-profile-links {
+    border-top: 0;
+    margin-top: 0.2rem;
+    padding-top: 0;
+  }
+
   .publications-years-nav {
     flex-direction: row;
     flex-wrap: wrap;
@@ -399,6 +436,60 @@ body.sticky-bottom-footer {
 
   .publications-year-link.is-active {
     border-color: var(--global-theme-color);
+  }
+}
+
+.cv-pdf-access {
+  align-items: center;
+  display: inline-flex;
+  gap: 0.45rem;
+}
+
+.cv-pdf-label {
+  color: var(--global-text-color-light);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.015em;
+  line-height: 1;
+  text-transform: uppercase;
+  transform: translateY(0.06rem);
+}
+
+.cv-pdf-icon-link {
+  align-items: center;
+  border: 1px solid var(--global-divider-color);
+  border-radius: 999px;
+  color: var(--global-text-color-light);
+  display: inline-flex;
+  height: 1.8rem;
+  justify-content: center;
+  text-decoration: none;
+  width: 1.8rem;
+}
+
+.cv-pdf-icon-link i {
+  font-size: 0.88rem;
+}
+
+.cv-pdf-icon-link:hover {
+  border-color: var(--global-theme-color);
+  color: var(--global-theme-color);
+  text-decoration: none;
+}
+
+@media (max-width: 576px) {
+  .cv-pdf-access {
+    gap: 0.35rem;
+  }
+
+  .cv-pdf-label {
+    font-size: 0.66rem;
+  }
+
+  .cv-pdf-icon-link {
+    height: 1.62rem;
+    width: 1.62rem;
   }
 }
 
