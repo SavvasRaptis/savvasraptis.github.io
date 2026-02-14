@@ -8,7 +8,7 @@
     - name: Location
       value: Maryland, USA
     - name: Research Areas
-      value: Space and plasma physics, heliophysics, space weather, machine learning for space science
+      value: heliophysics, machine learning applications, space plasma physics and space weather
 
 - title: Research Appointments
   type: time_table
@@ -66,7 +66,7 @@
   type: map
   contents:
     - name: Email
-      value: savvas.raptis@jhuapl.edu
+      value:  <a href="mailto:savvas.raptis@jhuapl.edu">savvas.raptis@jhuapl.edu |  <a href="mailto:savvasraptis@pm.me">savvasraptis@pm.me</a>
     - name: Website
       value: <a href="https://savvasraptis.github.io">savvasraptis.github.io</a>
     - name: Google Scholar
