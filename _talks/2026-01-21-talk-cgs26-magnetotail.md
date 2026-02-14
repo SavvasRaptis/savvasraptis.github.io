@@ -1,5 +1,5 @@
 ---
-title: CGS26_magnetotail_talk
+title: Stormtime Plasma Sheet Recent, Ongoing, & Future efforts
 collection: talks
 category: contributed
 type: Oral presentation
