@@ -1,0 +1,10 @@
+{%- assign first_clean = include.first_name | default: '' | replace: '-', ' ' | replace: '.', '' -%}
+{%- assign first_parts = first_clean | split: ' ' -%}
+{%- assign wrote_one = false -%}
+{%- for first_part in first_parts -%}
+  {%- assign part = first_part | strip -%}
+  {%- if part != '' -%}
+    {%- if wrote_one -%} {% endif -%}{{- part | slice: 0, 1 -}}.
+    {%- assign wrote_one = true -%}
+  {%- endif -%}
+{%- endfor -%}

@@ -8,7 +8,7 @@ profile:
   align: right
   image: prof_pic.jpg
   image_circular: false
-  image_ellipse: true
+  image_ellipse: false
   more_info: >
     <p>Johns Hopkins University Applied Physics Laboratory</p>
     <p>Space Exploration Sector</p>

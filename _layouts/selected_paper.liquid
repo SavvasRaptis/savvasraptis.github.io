@@ -7,6 +7,7 @@
   <p class="selected-paper-authors">
     {% for author in entry.author_array limit: 5 %}
       {% assign selected_author_is_self = false %}
+      {%- capture selected_author_first_initials -%}{% include author_initials.liquid first_name=author.first %}{%- endcapture -%}
       {% assign selected_author_last_name = author.last | regex_replace: '[*∗†‡§¶‖&^]', '' %}
       {% if site.scholar.last_name contains selected_author_last_name %}
         {% if site.scholar.first_name contains author.first %}
@@ -14,7 +15,7 @@
         {% endif %}
       {% endif %}
       <span class="{% if selected_author_is_self %}selected-author-self{% else %}selected-author-other{% endif %}">
-        {{ author.first }} {{ selected_author_last_name }}
+        {{ selected_author_first_initials }} {{ selected_author_last_name }}
       </span>{% unless forloop.last %}, {% endunless %}
     {% endfor %}
     {% if author_count > 5 %}, <span class="selected-author-other">et al.</span>{% endif %}
