@@ -49,7 +49,7 @@ body.sticky-bottom-footer {
 .profile img.profile-image-soft-rect {
   aspect-ratio: 1 / 1;
   border: 1px solid var(--global-divider-color);
-  border-radius: 0.95rem;
+  border-radius: 0;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--global-text-color) 10%, transparent);
   object-fit: cover;
 }
@@ -87,8 +87,8 @@ body.sticky-bottom-footer {
 .about-intro .about-profile {
   flex: 0 0 auto;
   margin: 0;
-  max-width: 225px;
-  width: min(225px, 100%);
+  max-width: 250px;
+  width: min(250px, 100%);
 }
 
 .about-intro .about-intro-content {
@@ -98,6 +98,19 @@ body.sticky-bottom-footer {
 
 .about-intro .about-profile .more-info {
   margin-top: 0.55rem;
+  max-width: 250px;
+  width: 100%;
+}
+
+.about-intro .about-profile .more-info p {
+  display: block;
+  line-height: 1.3;
+  margin: 0;
+  white-space: normal;
+}
+
+.about-intro .about-profile .more-info p + p {
+  margin-top: 0.12rem;
 }
 
 .about-intro .about-intro-content > :first-child {
@@ -462,10 +475,20 @@ body.sticky-bottom-footer {
 }
 
 .publications-main .publication-row .author {
-  color: var(--global-text-color-light);
+  color: color-mix(in srgb, var(--global-text-color) 35%, var(--global-text-color-light));
   font-size: 0.92rem;
   line-height: 1.42;
   margin-bottom: 0.22rem;
+}
+
+.publications-main .publication-row .author > em {
+  color: var(--global-text-color);
+  font-weight: 600;
+}
+
+.publications h2.bibliography {
+  color: var(--global-text-color);
+  font-weight: 650;
 }
 
 .publications-main .publication-row .periodical {

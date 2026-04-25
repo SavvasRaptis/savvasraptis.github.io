@@ -8,14 +8,17 @@
     - name: Location
       value: Maryland, USA
     - name: Research Areas
-      value: heliophysics, machine learning applications, space plasma physics and space weather
+      value: heliophysics, appied ML/AI, space plasma physics and space weather
 
 - title: Research Appointments
   type: time_table
   contents:
-    - title: Researcher
+    - title: Senior Research Scientist
       institution: Johns Hopkins University Applied Physics Laboratory, Laurel, Maryland, USA
-      year: Jun 2023 - Present
+      year: Mar 2026 - Present
+    - title: Associate Research Scientist
+      institution: Johns Hopkins University Applied Physics Laboratory, Laurel, Maryland, USA
+      year: Jun 2023 - Mar 2026
     - title: Visiting Researcher
       institution: European Space Agency (ESA-ESTEC), Leiden, Netherlands
       year: Jan 2023 - Apr 2023
