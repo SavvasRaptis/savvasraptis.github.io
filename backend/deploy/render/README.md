@@ -25,7 +25,7 @@ Use:
 Set these in Render:
 
 - `SCVIEWER_ALLOWED_ORIGINS=https://savvasraptis.github.io`
-- `SCVIEWER_CACHE_DIR=/var/data/scviewer-cache`
+- `SCVIEWER_CACHE_DIR=/tmp/scviewer-cache`
 - `SCVIEWER_HORIZONS_CHUNK_DAYS=31`
 
 Optional:

@@ -17,8 +17,15 @@ class Settings:
 
 
 def load_settings() -> Settings:
-    cache_dir = Path(os.getenv("SCVIEWER_CACHE_DIR", "./backend/data/cache")).resolve()
-    cache_dir.mkdir(parents=True, exist_ok=True)
+    requested_cache_dir = Path(os.getenv("SCVIEWER_CACHE_DIR", "./backend/data/cache")).resolve()
+    cache_dir = requested_cache_dir
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+    except (PermissionError, OSError):
+        # Render Free (and similar hosts) can reject some absolute roots.
+        # Fall back to a guaranteed writable tmp path.
+        cache_dir = Path("/tmp/scviewer-cache").resolve()
+        cache_dir.mkdir(parents=True, exist_ok=True)
 
     allowed_origins_env = os.getenv("SCVIEWER_ALLOWED_ORIGINS", "https://savvasraptis.github.io")
     allowed_origins = tuple(_split_csv(allowed_origins_env))
@@ -32,4 +39,3 @@ def load_settings() -> Settings:
         allowed_origins=allowed_origins,
         chunk_days=chunk_days,
     )
-

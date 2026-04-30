@@ -9,6 +9,6 @@ services:
       - key: SCVIEWER_ALLOWED_ORIGINS
         value: https://savvasraptis.github.io
       - key: SCVIEWER_CACHE_DIR
-        value: /var/data/scviewer-cache
+        value: /tmp/scviewer-cache
       - key: SCVIEWER_HORIZONS_CHUNK_DAYS
         value: "31"

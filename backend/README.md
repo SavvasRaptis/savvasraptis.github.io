@@ -25,7 +25,7 @@ uvicorn scviewer_api.main:app --app-dir backend --reload --host 0.0.0.0 --port 8
 ## Configuration
 
 - `SCVIEWER_ALLOWED_ORIGINS` (comma-separated origins)
-- `SCVIEWER_CACHE_DIR` (default `./backend/data/cache`)
+- `SCVIEWER_CACHE_DIR` (default `./backend/data/cache`; on Render Free use `/tmp/scviewer-cache`)
 - `SCVIEWER_HORIZONS_CHUNK_DAYS` (default `31`)
 - `SCVIEWER_SSC_TIMEOUT_SEC` (default `10`)
 - `SCVIEWER_SSC_FAILFAST_MINUTES` (default `5`)
