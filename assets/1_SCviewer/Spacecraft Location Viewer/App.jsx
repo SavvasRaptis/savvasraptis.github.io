@@ -21,7 +21,7 @@ const DEFAULT_SELECTION = new Set([
 // Scales + planes. Each gets a short nav label for the subplot quick-nav.
 const SCALES = [
   { id: 'system',  name: 'Sun–Earth System',                short: 'Sun–Earth',   unit: 'AU', halfWidth: 1.15, center: { x: 0.5 * APP_AU_KM, y: 0, z: 0 } },
-  { id: 'l1',      name: 'L1 Region',                       short: 'L1',          unit: 'Re', halfWidth: 60,   center: { x: APP_L1_KM, y: 0, z: 0 } },
+  { id: 'l1',      name: 'L1 Region',                       short: 'L1',          unit: 'Re', halfWidth: 80,   center: { x: APP_L1_KM, y: 0, z: 0 } },
 ];
 // Wide magnetosphere panel — big enough to show Moon (~60 Re) so users see relative distance
 const MOON_SCALE = { id: 'moonmag', name: 'Earth Magnetosphere', short: 'Earth Magnetosphere',
