@@ -13,7 +13,7 @@ const {
 } = window.SC_DATA;
 
 const DEFAULT_SELECTION = new Set([
-  'MMS1','MMS2','MMS3','MMS4',
+  'MMS1',
   'IMAP',
   'PSP',
 ]);
@@ -21,12 +21,10 @@ const DEFAULT_SELECTION = new Set([
 // Scales + planes. Each gets a short nav label for the subplot quick-nav.
 const SCALES = [
   { id: 'system',  name: 'Sun–Earth System',                short: 'Sun–Earth',   unit: 'AU', halfWidth: 1.15, center: { x: 0.5 * APP_AU_KM, y: 0, z: 0 } },
-  { id: 'heli',    name: 'Inner Heliosphere',               short: 'Inner Helio', unit: 'AU', halfWidth: 0.5,  center: { x: APP_AU_KM, y: 0, z: 0 } },
   { id: 'l1',      name: 'L1 Region',                       short: 'L1',          unit: 'Re', halfWidth: 60,   center: { x: APP_L1_KM, y: 0, z: 0 } },
-  { id: 'near',    name: 'Near-Earth Magnetosphere',        short: 'Near Earth',  unit: 'Re', halfWidth: 30,   center: { x: 0, y: 0, z: 0 } },
 ];
 // Wide magnetosphere panel — big enough to show Moon (~60 Re) so users see relative distance
-const MOON_SCALE = { id: 'moonmag', name: 'Broader Magnetosphere', short: 'Broader Magnetosphere',
+const MOON_SCALE = { id: 'moonmag', name: 'Earth Magnetosphere', short: 'Earth Magnetosphere',
                     unit: 'Re', halfWidth: 80, center: { x: 0, y: 0, z: 0 } };
 
 const MAX_WINDOW_DAYS = 31;
@@ -361,7 +359,7 @@ function App() {
                 </button>
               ))}
               <button className="qn-btn" onClick={() => scrollToPanel('moonmag-row')}>
-                <span>Broader Magnetosphere</span>
+                <span>Earth Magnetosphere</span>
               </button>
             </div>
 
@@ -375,7 +373,7 @@ function App() {
               </div>
             ))}
 
-            {/* Broader magnetosphere row — both planes */}
+            {/* Earth magnetosphere row — both planes */}
             <div className="plot-row" ref={el => subplotRefs.current['moonmag-row'] = el}>
               <PlotPanel scale={{ ...MOON_SCALE, plane: 'xy' }} ctx={ctx} showLegend={showLegend}
                 onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
