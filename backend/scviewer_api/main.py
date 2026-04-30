@@ -17,7 +17,7 @@ from .settings import load_settings
 settings = load_settings()
 app = FastAPI(title="SC Viewer Ephemeris API", version="1.0.0")
 logger = logging.getLogger(__name__)
-YEAR_CACHE_VERSION = "gse_ecliptic_v1"
+YEAR_CACHE_VERSION = "gse_ecliptic_v2"
 
 app.add_middleware(
     CORSMiddleware,

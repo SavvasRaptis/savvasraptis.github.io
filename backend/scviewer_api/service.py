@@ -17,7 +17,7 @@ AU_KM = 149_597_870.7
 STEP_RE = {"m", "h", "d"}
 IMAP_EARLIEST_UTC = datetime(2025, 9, 24, 13, 1, 9, tzinfo=UTC)
 JUICE_EARLIEST_UTC = datetime(2023, 4, 14, 12, 43, 27, tzinfo=UTC)
-CACHE_VERSION = "gse_ecliptic_v1"
+CACHE_VERSION = "gse_ecliptic_v2"
 
 # Astroquery currently emits a noisy deprecation around id_type internals.
 warnings.filterwarnings(
@@ -178,7 +178,7 @@ def gse_track_for_spacecraft(
     chunk_days: int,
     sun_cache: dict[tuple[str, str, str], tuple[list[str], np.ndarray]],
 ) -> list[dict[str, float | str]]:
-    cache_step = f"{step}|{CACHE_VERSION}"
+    cache_step = f"{step}|{CACHE_VERSION}|{spacecraft.horizons_id}"
     cached = read_json_cache(cache_root, spacecraft.id, start, end, cache_step)
     if cached is not None:
         return cached
