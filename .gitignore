@@ -11,3 +11,8 @@ assets/libs/
 node_modules/
 vendor
 .idea
+.venv/
+backend/.venv/
+backend/data/cache/
+__pycache__/
+*.pyc

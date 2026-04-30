@@ -1,0 +1,5 @@
+fastapi==0.115.8
+uvicorn[standard]==0.34.0
+astroquery==0.4.10
+numpy==2.2.2
+sscws==2.4.7

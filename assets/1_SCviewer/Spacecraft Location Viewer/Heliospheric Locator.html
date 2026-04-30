@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Spacecraft Location Viewer — GSE dashboard</title>
+    <meta name="viewport" content="width=1400" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <pre id="runtime-errors" style="display:none;position:fixed;left:10px;right:10px;bottom:10px;max-height:35vh;overflow:auto;padding:10px;border:1px solid #f0b6b6;border-radius:8px;background:#fff6f6;color:#6d0f0f;font:12px ui-monospace,Menlo,monospace;white-space:pre-wrap;z-index:9999;"></pre>
+
+    <script>
+      // API base precedence:
+      // 1) existing window.SC_API_BASE (manual override)
+      // 2) ?api=https://... query parameter
+      // 3) localhost fallback for local runs
+      // 4) production default (set this to your Render hostname)
+      const _apiFromQuery = new URLSearchParams(window.location.search).get('api');
+      const _isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+      const _prodDefaultApi = 'https://<your-render-service>.onrender.com';
+      window.SC_API_BASE = window.SC_API_BASE || _apiFromQuery || (_isLocalHost ? 'http://localhost:8000' : _prodDefaultApi);
+      window.__SC_BOOT_ACTIVE = true;
+      function renderBootError(message) {
+        const root = document.getElementById('root');
+        if (!root) return;
+        root.innerHTML = '';
+        const pre = document.createElement('pre');
+        pre.style.whiteSpace = 'pre-wrap';
+        pre.style.padding = '20px';
+        pre.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+        pre.textContent = message;
+        root.appendChild(pre);
+      }
+
+      window.renderBootError = renderBootError;
+      function appendRuntimeError(message) {
+        const el = document.getElementById('runtime-errors');
+        if (!el) return;
+        el.style.display = 'block';
+        const ts = new Date().toISOString();
+        el.textContent += `\\n[${ts}] ${message}\\n`;
+      }
+      function handleBootError(event) {
+        const message =
+          `Viewer runtime error: ${event.message || 'unknown error'}\n` +
+          `File: ${event.filename || 'n/a'}\n` +
+          `Line: ${event.lineno || 'n/a'}:${event.colno || 'n/a'}`;
+        if (window.__SC_BOOT_ACTIVE) {
+          renderBootError(message);
+        } else {
+          appendRuntimeError(message);
+        }
+      }
+      function handleBootRejection(event) {
+        const reason = event.reason && (event.reason.stack || event.reason.message)
+          ? (event.reason.stack || event.reason.message)
+          : String(event.reason);
+        const message = `Viewer runtime rejection:\n${reason}`;
+        if (window.__SC_BOOT_ACTIVE) {
+          renderBootError(message);
+        } else {
+          appendRuntimeError(message);
+        }
+      }
+      window.addEventListener('error', handleBootError);
+      window.addEventListener('unhandledrejection', handleBootRejection);
+      window.__SC_BOOT_ERROR_LISTENERS = { handleBootError, handleBootRejection };
+    </script>
+    <script>
+      function loadScript(src, attrs = {}) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          Object.entries(attrs).forEach(([k, v]) => s.setAttribute(k, v));
+          s.onload = () => resolve(src);
+          s.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+          document.head.appendChild(s);
+        });
+      }
+
+      async function loadFromAny(urls, attrs = {}) {
+        let lastErr = null;
+        for (const url of urls) {
+          try {
+            await loadScript(url, attrs);
+            return url;
+          } catch (err) {
+            lastErr = err;
+          }
+        }
+        throw lastErr || new Error(`Failed to load script candidates: ${urls.join(', ')}`);
+      }
+
+      async function loadLocalJs(src) {
+        await loadScript(src);
+      }
+
+      async function runBabelFile(src) {
+        const response = await fetch(src, { cache: 'no-store' });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${src}: HTTP ${response.status}`);
+        }
+        const code = await response.text();
+        const transformed = Babel.transform(code, {
+          presets: ['env', 'react'],
+          filename: src,
+          sourceMaps: 'inline',
+        }).code;
+        // sourceURL gives readable file names in stack traces for eval'd code.
+        (0, eval)(`${transformed}\n//# sourceURL=${src}`);
+      }
+
+      (async function boot() {
+        try {
+          if (window.location.protocol === 'file:') {
+            throw new Error(
+              'This viewer must be opened through a local web server.\n' +
+              'Run in this folder: python3 -m http.server 4000\n' +
+              'Then open: http://localhost:4000/Heliospheric%20Locator.html'
+            );
+          }
+          await loadFromAny(
+            [
+              'https://unpkg.com/react@18/umd/react.development.js',
+              'https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.development.min.js',
+            ],
+            { crossorigin: 'anonymous' }
+          );
+          await loadFromAny(
+            [
+              'https://unpkg.com/react-dom@18/umd/react-dom.development.js',
+              'https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.development.min.js',
+            ],
+            { crossorigin: 'anonymous' }
+          );
+          await loadFromAny(
+            [
+              'https://unpkg.com/@babel/standalone@7/babel.min.js',
+              'https://cdn.jsdelivr.net/npm/@babel/standalone@7/babel.min.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js',
+            ],
+            { crossorigin: 'anonymous' }
+          );
+
+          await loadLocalJs('./models.js');
+          await loadLocalJs('./spacecraft.js');
+          await loadLocalJs('./plot.js');
+
+          await runBabelFile('./Sidebar.jsx');
+          await runBabelFile('./Inspector.jsx');
+          await runBabelFile('./PlotPanel.jsx');
+          await runBabelFile('./App.jsx');
+        } catch (err) {
+          renderBootError(
+            `Viewer boot failed:\n${err && (err.stack || err.message) ? (err.stack || err.message) : String(err)}`
+          );
+        } finally {
+          window.__SC_BOOT_ACTIVE = false;
+        }
+      })();
+    </script>
+  </body>
+</html>
