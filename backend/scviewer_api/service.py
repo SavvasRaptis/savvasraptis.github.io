@@ -17,6 +17,7 @@ AU_KM = 149_597_870.7
 STEP_RE = {"m", "h", "d"}
 IMAP_EARLIEST_UTC = datetime(2025, 9, 24, 13, 1, 9, tzinfo=UTC)
 JUICE_EARLIEST_UTC = datetime(2023, 4, 14, 12, 43, 27, tzinfo=UTC)
+CACHE_VERSION = "gse_ecliptic_v1"
 
 # Astroquery currently emits a noisy deprecation around id_type internals.
 warnings.filterwarnings(
@@ -101,7 +102,8 @@ def _query_vectors_table(horizons_id: str, start: datetime, end: datetime, step:
     """
     epochs = {"start": _horizons_time(start), "stop": _horizons_time(end), "step": step}
     try:
-        return Horizons(id=horizons_id, location="@399", epochs=epochs).vectors(refplane="earth")
+        # GSE construction here assumes vectors are in the ecliptic reference plane.
+        return Horizons(id=horizons_id, location="@399", epochs=epochs).vectors(refplane="ecliptic")
     except Exception as exc:  # pragma: no cover - depends on remote Horizons behavior
         raise RuntimeError(str(exc)) from exc
 
@@ -176,7 +178,8 @@ def gse_track_for_spacecraft(
     chunk_days: int,
     sun_cache: dict[tuple[str, str, str], tuple[list[str], np.ndarray]],
 ) -> list[dict[str, float | str]]:
-    cached = read_json_cache(cache_root, spacecraft.id, start, end, step)
+    cache_step = f"{step}|{CACHE_VERSION}"
+    cached = read_json_cache(cache_root, spacecraft.id, start, end, cache_step)
     if cached is not None:
         return cached
 
@@ -194,7 +197,7 @@ def gse_track_for_spacecraft(
     if uses_external_provider(spacecraft.id):
         rows = fetch_external_gse_track(spacecraft.id, start_dt, end_dt, step_delta)
         if rows:
-            write_json_cache(cache_root, spacecraft.id, start, end, step_value, rows)
+            write_json_cache(cache_root, spacecraft.id, start, end, cache_step, rows)
         return rows
 
     key = (start, end, step_value)
@@ -231,5 +234,5 @@ def gse_track_for_spacecraft(
         for i in range(size)
     ]
     if rows:
-        write_json_cache(cache_root, spacecraft.id, start, end, step_value, rows)
+        write_json_cache(cache_root, spacecraft.id, start, end, cache_step, rows)
     return rows

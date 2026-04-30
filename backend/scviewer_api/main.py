@@ -17,6 +17,7 @@ from .settings import load_settings
 settings = load_settings()
 app = FastAPI(title="SC Viewer Ephemeris API", version="1.0.0")
 logger = logging.getLogger(__name__)
+YEAR_CACHE_VERSION = "gse_ecliptic_v1"
 
 app.add_middleware(
     CORSMiddleware,
@@ -75,7 +76,7 @@ def positions(
 
 
 def _ensure_year_csv(spacecraft, year: int, step: str) -> Path:
-    path = year_csv_path(settings.cache_dir, spacecraft.id, year, step)
+    path = year_csv_path(settings.cache_dir, spacecraft.id, year, f"{step}-{YEAR_CACHE_VERSION}")
     if path.exists():
         return path
 
