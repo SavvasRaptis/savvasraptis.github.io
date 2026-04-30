@@ -24,7 +24,7 @@
       // 4) production default (set this to your Render hostname)
       const _apiFromQuery = new URLSearchParams(window.location.search).get('api');
       const _isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-      const _prodDefaultApi = 'https://<your-render-service>.onrender.com';
+      const _prodDefaultApi = 'https://savvasraptis-github-io.onrender.com';
       window.SC_API_BASE = window.SC_API_BASE || _apiFromQuery || (_isLocalHost ? 'http://localhost:8000' : _prodDefaultApi);
       window.__SC_BOOT_ACTIVE = true;
       function renderBootError(message) {
