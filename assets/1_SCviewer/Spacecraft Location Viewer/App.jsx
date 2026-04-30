@@ -22,8 +22,8 @@ const DEFAULT_SELECTION = new Set([
 // Scales + planes. Each gets a short nav label for the subplot quick-nav.
 const SCALES = [
   { id: 'system',  name: 'Sun–Earth System',                short: 'Sun–Earth',   unit: 'AU', halfWidth: 1.15, center: { x: 0.5 * APP_AU_KM, y: 0, z: 0 } },
-  { id: 'heli',    name: 'Inner Heliosphere (Sun-centred)', short: 'Inner Helio', unit: 'AU', halfWidth: 0.5,  center: { x: APP_AU_KM, y: 0, z: 0 } },
-  { id: 'l1',      name: 'L1 Region',                       short: 'L1',          unit: 'Re', halfWidth: 45,   center: { x: APP_L1_KM, y: 0, z: 0 } },
+  { id: 'heli',    name: 'Inner Heliosphere',               short: 'Inner Helio', unit: 'AU', halfWidth: 0.5,  center: { x: APP_AU_KM, y: 0, z: 0 } },
+  { id: 'l1',      name: 'L1 Region',                       short: 'L1',          unit: 'Re', halfWidth: 50,   center: { x: APP_L1_KM, y: 0, z: 0 } },
   { id: 'near',    name: 'Near-Earth Magnetosphere',        short: 'Near Earth',  unit: 'Re', halfWidth: 30,   center: { x: 0, y: 0, z: 0 } },
 ];
 // Wide magnetosphere panel — big enough to show Moon (~60 Re) so users see relative distance
@@ -119,6 +119,7 @@ function App() {
     ...flags,
     hoveredId,
     selectedScId,
+    startDate: startISO,
     endDate: endISO,
   };
 
@@ -284,7 +285,7 @@ function App() {
             <line x1="3" y1="11" x2="20" y2="11" stroke="oklch(0.35 0.01 260)" strokeWidth="0.6" strokeDasharray="1.5 2"/>
           </svg>
           <h1>Spacecraft Location Viewer</h1>
-          <span className="subtitle">GSE positions · multi-scale</span>
+          <span className="subtitle">GSE positions · multi-mission</span>
         </div>
 
         <ScPicker

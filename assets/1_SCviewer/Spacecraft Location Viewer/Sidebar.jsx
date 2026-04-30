@@ -10,7 +10,7 @@ function Sidebar({
 
   selectedIds, onToggle, onToggleGroup,
   expandedGroups, onToggleExpand,
-  showBS, showMP, showOrbits, showLabels, showL1L2, showMoon,
+  showBS, showMP, showOrbits, showLabels, showL1L2,
   onFlag,
   showLegend, setShowLegend,
   selectedScId, onFocusSc,
@@ -90,6 +90,17 @@ function Sidebar({
       </section>
 
       <section className="sb-section">
+        <h3 className="sb-h">Reference overlays</h3>
+        <div className="flags">
+          <SbFlag label="Legend panel (right of each plot)" checked={showLegend} onChange={setShowLegend} />
+          <SbFlag label="Spacecraft names in plot" checked={showLabels} onChange={v => onFlag('showLabels', v)} />
+          <SbFlag label="Magnetopause (Shue 1997)" checked={showMP} onChange={v => onFlag('showMP', v)} />
+          <SbFlag label="Bow shock" checked={showBS} onChange={v => onFlag('showBS', v)} />
+          <SbFlag label="L1 / L2 markers" checked={showL1L2} onChange={v => onFlag('showL1L2', v)} />
+        </div>
+      </section>
+
+      <section className="sb-section">
         <h3 className="sb-h">Spacecraft <span className="count">{selectedIds.size}/{SB_CATALOG.length}</span></h3>
         {groupOrder.map(gk => {
           const list = grouped[gk] || [];
@@ -136,19 +147,6 @@ function Sidebar({
             </div>
           );
         })}
-      </section>
-
-      <section className="sb-section">
-        <h3 className="sb-h">Reference overlays</h3>
-        <div className="flags">
-          <SbFlag label="Legend panel (right of each plot)" checked={showLegend} onChange={setShowLegend} />
-          <SbFlag label="Spacecraft names in plot" checked={showLabels} onChange={v => onFlag('showLabels', v)} />
-          <SbFlag label="Magnetopause (Shue 1997)" checked={showMP} onChange={v => onFlag('showMP', v)} />
-          <SbFlag label="Bow shock" checked={showBS} onChange={v => onFlag('showBS', v)} />
-          <SbFlag label="Earth orbit" checked={showOrbits} onChange={v => onFlag('showOrbits', v)} />
-          <SbFlag label="L1 / L2 markers" checked={showL1L2} onChange={v => onFlag('showL1L2', v)} />
-          <SbFlag label="Moon + lunar orbit" checked={showMoon} onChange={v => onFlag('showMoon', v)} />
-        </div>
       </section>
     </aside>
   );

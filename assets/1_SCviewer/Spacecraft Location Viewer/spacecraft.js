@@ -46,6 +46,7 @@ const CATALOG = [
   { id: 'DSCOVR', name: 'DSCOVR', group: 'solar_l1' },
   { id: 'ADITYA', name: 'Aditya-L1', group: 'solar_l1' },
   { id: 'IMAP', name: 'IMAP', group: 'solar_l1' },
+  { id: 'SOLAR1', name: 'SOLAR-1', group: 'solar_l1' },
 
   { id: 'PSP', name: 'Parker Solar Probe', group: 'inner_heli' },
   { id: 'SOLO', name: 'Solar Orbiter', group: 'inner_heli' },

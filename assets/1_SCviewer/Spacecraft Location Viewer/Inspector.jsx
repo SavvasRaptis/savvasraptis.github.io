@@ -7,6 +7,7 @@ function Inspector({ sc, snapshot, epochLabel, onClose }) {
   const { x, y, z } = snapshot;
   const rKm = Math.sqrt(x*x + y*y + z*z);
   const sunDistKm = Math.sqrt((x - INSP_AU_KM)**2 + y*y + z*z);
+  const useReForX = sc.group === 'solar_l1' || sc.group === 'magnetospheric';
 
   // Human-readable km with thousand separators — no scientific notation for coords
   const fmtKm = (v) => {
@@ -55,7 +56,7 @@ function Inspector({ sc, snapshot, epochLabel, onClose }) {
         <h4>GSE position</h4>
         <table className="kv">
           <tbody>
-            <tr><td>X</td><td className="num">{fmtAu(x)} AU</td><td className="num dim">{fmtKm(x)}</td></tr>
+            <tr><td>X</td><td className="num">{useReForX ? `${fmtRe(x)} Rₑ` : `${fmtAu(x)} AU`}</td><td className="num dim">{fmtKm(x)}</td></tr>
             <tr><td>Y</td><td className="num">{fmtRe(y)} Rₑ</td><td className="num dim">{fmtKm(y)}</td></tr>
             <tr><td>Z</td><td className="num">{fmtRe(z)} Rₑ</td><td className="num dim">{fmtKm(z)}</td></tr>
           </tbody>

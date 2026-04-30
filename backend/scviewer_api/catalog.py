@@ -34,6 +34,7 @@ SPACECRAFT_CATALOG: list[Spacecraft] = [
     Spacecraft("DSCOVR", "DSCOVR", "-78", (), "solar_l1", "diamond"),
     Spacecraft("ADITYA", "Aditya-L1", "-161", (), "solar_l1", "star"),
     Spacecraft("IMAP", "IMAP", "-43", (), "solar_l1", "cross"),
+    Spacecraft("SOLAR1", "SOLAR-1", "-231", (), "solar_l1", "triangleDown"),
     Spacecraft("PSP", "Parker Solar Probe", "-96", (), "inner_heli", "circle"),
     Spacecraft("SOLO", "Solar Orbiter", "-144", (), "inner_heli", "square"),
     Spacecraft("STEREOA", "STEREO-A", "-234", (), "inner_heli", "triangle"),

@@ -8,6 +8,9 @@
 const { AU_KM, RE_KM, L1_KM, L2_KM, MOON_KM, GROUPS } = window.SC_DATA;
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const SUN_RADIUS_KM = 696_340;
+const MOON_ORBIT_INCLINATION_DEG = 5.145;
+const MOON_ORBIT_INCLINATION_RAD = MOON_ORBIT_INCLINATION_DEG * Math.PI / 180;
+const MOON_ORBIT_Z_FACTOR = Math.sin(MOON_ORBIT_INCLINATION_RAD);
 
 function niceTicks(min, max, maxCount = 10) {
   const range = max - min;
@@ -236,8 +239,8 @@ function buildPlot(scale, ctx, opts = {}) {
   const isSystem = scale.id === 'system';
   const isNearEarth = scale.unit === 'Re';
 
-  // Earth's orbit
-  if (ctx.showOrbits && scale.halfWidth * unitKm > 0.5 * AU_KM) {
+  // Always show Earth's ecliptic orbit ring on the Sun-Earth system XY subplot.
+  if (isSystem && scale.plane === 'xy') {
     const [scX, scY] = worldToScreen({ x: AU_KM, y: 0, z: 0 });
     const r = AU_KM * pxPerKmX;
     content.appendChild(el('circle', {
@@ -247,7 +250,7 @@ function buildPlot(scale, ctx, opts = {}) {
     }));
   }
 
-  // Moon orbit
+  // Moon orbit overlay.
   const earthRadiusPx = RE_KM * pxPerKmX;
   const moonOrbitPx = MOON_KM * pxPerKmX;
   // Always show on moonmag scale; otherwise gated by toggle + size.
@@ -255,36 +258,38 @@ function buildPlot(scale, ctx, opts = {}) {
   const showMoonOrbit = isMoonMag || (ctx.showMoon && moonOrbitPx > 18 && moonOrbitPx < Math.min(plotW, plotH) * 0.55);
   if (showMoonOrbit) {
     const [ex, ey] = worldToScreen({ x: 0, y: 0, z: 0 });
-    content.appendChild(el('circle', {
-      cx: ex, cy: ey, r: moonOrbitPx, fill: 'none',
-      stroke: 'oklch(0.55 0.01 260 / 0.65)',
-      'stroke-width': 1.2, 'stroke-dasharray': '4 4',
-    }));
-    // Moon body — pos depends on plane (XY: y component, XZ: z component)
-    const moonPos = scale.plane === 'xz'
-      ? { x: MOON_KM * 0.7071, y: 0, z: MOON_KM * 0.7071 }
-      : { x: MOON_KM * 0.7071, y: MOON_KM * 0.7071, z: 0 };
-    const [mx, my] = worldToScreen(moonPos);
-    const moonR = Math.max(8 * fs, Math.min(14 * fs, moonOrbitPx * 0.05));
-    // crater shading
-    const moonGrad = `moon-grad-${Math.random().toString(36).slice(2,8)}`;
-    const defs2 = el('defs');
-    const rg = el('radialGradient', { id: moonGrad, cx: '35%', cy: '35%', r: '70%' });
-    rg.appendChild(el('stop', { offset: '0%', 'stop-color': 'oklch(0.92 0.005 260)' }));
-    rg.appendChild(el('stop', { offset: '60%', 'stop-color': 'oklch(0.78 0.01 260)' }));
-    rg.appendChild(el('stop', { offset: '100%', 'stop-color': 'oklch(0.55 0.01 260)' }));
-    defs2.appendChild(rg);
-    content.appendChild(defs2);
-    content.appendChild(el('circle', { cx: mx, cy: my, r: moonR, fill: `url(#${moonGrad})`, stroke: 'oklch(0.42 0.01 260)', 'stroke-width': 1.1 }));
-    // craters
-    content.appendChild(el('circle', { cx: mx - moonR * 0.25, cy: my - moonR * 0.15, r: moonR * 0.18, fill: 'oklch(0.62 0.01 260 / 0.5)' }));
-    content.appendChild(el('circle', { cx: mx + moonR * 0.25, cy: my + moonR * 0.2, r: moonR * 0.13, fill: 'oklch(0.62 0.01 260 / 0.5)' }));
-    content.appendChild(el('circle', { cx: mx - moonR * 0.05, cy: my + moonR * 0.32, r: moonR * 0.09, fill: 'oklch(0.62 0.01 260 / 0.5)' }));
-    content.appendChild(el('text', {
-      x: mx + moonR + 4 * fs, y: my + 5 * fs,
-      'font-size': refLabelSize, 'font-weight': 700, fill: 'oklch(0.28 0.01 260)',
-      'paint-order': 'stroke', stroke: '#fff', 'stroke-width': 3.5, 'stroke-linejoin': 'round',
-    }, 'Moon'));
+    // XY is the ecliptic plane, so the projected orbit is circular there.
+    // In XZ, project an inclined (~5.145 deg) lunar orbit to avoid the incorrect full-radius circle.
+    if (scale.plane === 'xy') {
+      content.appendChild(el('circle', {
+        cx: ex, cy: ey, r: moonOrbitPx, fill: 'none',
+        stroke: 'oklch(0.55 0.01 260 / 0.65)',
+        'stroke-width': 1.2, 'stroke-dasharray': '4 4',
+      }));
+    } else {
+      const nPts = 180;
+      const pathPts = [];
+      for (let i = 0; i <= nPts; i++) {
+        const th = (i / nPts) * Math.PI * 2;
+        const p = {
+          x: MOON_KM * Math.cos(th),
+          y: 0,
+          z: MOON_KM * MOON_ORBIT_Z_FACTOR * Math.sin(th),
+        };
+        pathPts.push(worldToScreen(p));
+      }
+      const d = pathPts
+        .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x} ${y}`)
+        .join(' ') + ' Z';
+      content.appendChild(el('path', {
+        d,
+        fill: 'none',
+        stroke: 'oklch(0.55 0.01 260 / 0.65)',
+        'stroke-width': 1.2,
+        'stroke-dasharray': '4 4',
+      }));
+    }
+
   }
 
   // --- BS / MP
@@ -461,6 +466,26 @@ function buildPlot(scale, ctx, opts = {}) {
     'font-family': "'JetBrains Mono', ui-monospace, monospace",
     'font-size': badgeSize, 'font-weight': 700, 'text-anchor': 'end', fill: 'oklch(0.26 0.01 260)',
   }, `± ${scale.halfWidth} ${unitLabel}`));
+
+  // Date range annotation (same mono styling family as subplot meta labels).
+  if (ctx.startDate && ctx.endDate) {
+    const fmtDate = (iso) => {
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) return '';
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
+    };
+    const startLabel = fmtDate(ctx.startDate);
+    const endLabel = fmtDate(ctx.endDate);
+    if (startLabel && endLabel) {
+      svg.appendChild(el('text', {
+        x: W - PAD_R, y: titleSize + planeSize + 18,
+        'font-family': "'JetBrains Mono', ui-monospace, monospace",
+        'font-size': planeSize * 0.92, 'font-weight': 700, 'text-anchor': 'end',
+        'letter-spacing': '0.03em', fill: 'oklch(0.40 0.01 260)',
+      }, `${startLabel} → ${endLabel} UTC`));
+    }
+  }
 
   // Scale bar
   {

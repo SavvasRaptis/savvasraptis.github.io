@@ -12,6 +12,10 @@ def test_artemis_numeric_horizons_ids():
     assert SPACECRAFT_BY_ID["ARTP2"].horizons_id == "-193"
 
 
+def test_solar1_horizons_id():
+    assert SPACECRAFT_BY_ID["SOLAR1"].horizons_id == "-231"
+
+
 def test_external_provider_routing_contract():
     assert uses_external_provider("THA")
     assert uses_external_provider("THD")
