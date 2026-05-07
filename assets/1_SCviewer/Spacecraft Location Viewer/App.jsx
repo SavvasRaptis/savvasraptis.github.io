@@ -74,6 +74,7 @@ function App() {
   const [show3D, setShow3D] = React.useState(false);
   const [threeDScaleId, setThreeDScaleId] = React.useState('system');
   const [autoFitPairs, setAutoFitPairs] = React.useState(false);
+  const [manualHalfWidths, setManualHalfWidths] = React.useState({});
   const [query, setQuery] = React.useState('');
   const [downloadUnit, setDownloadUnit] = React.useState('AU');
   const [rangeWarn, setRangeWarn] = React.useState(null);
@@ -151,14 +152,19 @@ function App() {
 
   const getAutoHalfWidth = React.useCallback((baseScale) => {
     if (!autoFitPairs) return baseScale.halfWidth;
-    let allowedGroup = null;
-    if (baseScale.id === 'l1') allowedGroup = 'solar_l1';
-    if (baseScale.id === 'moonmag') allowedGroup = 'magnetospheric';
-    if (!allowedGroup) return baseScale.halfWidth;
+    const allowedGroups =
+      baseScale.id === 'system'
+        ? new Set(['inner_heli'])
+        : baseScale.id === 'l1'
+          ? new Set(['solar_l1'])
+          : baseScale.id === 'moonmag'
+            ? new Set(['magnetospheric'])
+            : null;
+    if (!allowedGroups) return baseScale.halfWidth;
     const unitKm = baseScale.unit === 'AU' ? APP_AU_KM : APP_RE_KM;
     let maxAbs = 0;
     for (const sc of selectedList) {
-      if (sc.group !== allowedGroup) continue;
+      if (!allowedGroups.has(sc.group)) continue;
       const track = tracks.get(sc.id);
       if (!track || !track.length) continue;
       for (const p of track) {
@@ -175,6 +181,40 @@ function App() {
     }
     return padded;
   }, [autoFitPairs, selectedList, tracks]);
+
+  const getRangeConfig = React.useCallback((scaleId) => {
+    if (scaleId === 'system') return { min: 1, max: 2, step: 0.05, unit: 'AU' };
+    if (scaleId === 'l1') return { min: 50, max: 150, step: 0.5, unit: 'Re' };
+    if (scaleId === 'moonmag') return { min: 10, max: 100, step: 0.5, unit: 'Re' };
+    return { min: 1, max: 200, step: 1, unit: '' };
+  }, []);
+
+  const getEffectiveHalfWidth = React.useCallback((baseScale) => {
+    const manual = manualHalfWidths[baseScale.id];
+    if (Number.isFinite(manual)) return manual;
+    return getAutoHalfWidth(baseScale);
+  }, [manualHalfWidths, getAutoHalfWidth]);
+
+  const setManualHalfWidth = React.useCallback((scaleId, nextValue) => {
+    const cfg = getRangeConfig(scaleId);
+    const n = Number(nextValue);
+    if (!Number.isFinite(n)) return;
+    const clamped = Math.min(cfg.max, Math.max(cfg.min, n));
+    const snapped = Math.round(clamped / cfg.step) * cfg.step;
+    setManualHalfWidths((prev) => ({
+      ...prev,
+      [scaleId]: Number(snapped.toFixed(cfg.step < 1 ? 2 : 1)),
+    }));
+  }, [getRangeConfig]);
+
+  const clearManualHalfWidth = React.useCallback((scaleId) => {
+    setManualHalfWidths((prev) => {
+      if (!(scaleId in prev)) return prev;
+      const next = { ...prev };
+      delete next[scaleId];
+      return next;
+    });
+  }, []);
 
   const ctx = {
     selected: selectedList,
@@ -497,22 +537,43 @@ function App() {
           </div>
 
           {SCALES.map(sc => {
-            const tuned = { ...sc, halfWidth: getAutoHalfWidth(sc) };
+            const tuned = { ...sc, halfWidth: getEffectiveHalfWidth(sc) };
+            const rangeConfig = getRangeConfig(sc.id);
             return (
               <div key={sc.id} className="plot-row" ref={el => subplotRefs.current[`${sc.id}-row`] = el}>
                 <PlotPanel scale={{ ...tuned, plane: 'xy' }} ctx={ctx} showLegend={showLegend}
-                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
+                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)}
+                  rangeConfig={rangeConfig}
+                  onSetHalfWidth={setManualHalfWidth}
+                  onResetHalfWidth={clearManualHalfWidth}
+                  hasManualHalfWidth={Number.isFinite(manualHalfWidths[sc.id])}
+                />
                 <PlotPanel scale={{ ...tuned, plane: 'xz' }} ctx={ctx} showLegend={showLegend}
-                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
+                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)}
+                  rangeConfig={rangeConfig}
+                  onSetHalfWidth={setManualHalfWidth}
+                  onResetHalfWidth={clearManualHalfWidth}
+                  hasManualHalfWidth={Number.isFinite(manualHalfWidths[sc.id])}
+                />
               </div>
             );
           })}
 
           <div className="plot-row" ref={el => subplotRefs.current['moonmag-row'] = el}>
-            <PlotPanel scale={{ ...MOON_SCALE, halfWidth: getAutoHalfWidth(MOON_SCALE), plane: 'xy' }} ctx={ctx} showLegend={showLegend}
-              onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
-            <PlotPanel scale={{ ...MOON_SCALE, halfWidth: getAutoHalfWidth(MOON_SCALE), plane: 'xz' }} ctx={ctx} showLegend={showLegend}
-              onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
+            <PlotPanel scale={{ ...MOON_SCALE, halfWidth: getEffectiveHalfWidth(MOON_SCALE), plane: 'xy' }} ctx={ctx} showLegend={showLegend}
+              onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)}
+              rangeConfig={getRangeConfig(MOON_SCALE.id)}
+              onSetHalfWidth={setManualHalfWidth}
+              onResetHalfWidth={clearManualHalfWidth}
+              hasManualHalfWidth={Number.isFinite(manualHalfWidths[MOON_SCALE.id])}
+            />
+            <PlotPanel scale={{ ...MOON_SCALE, halfWidth: getEffectiveHalfWidth(MOON_SCALE), plane: 'xz' }} ctx={ctx} showLegend={showLegend}
+              onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)}
+              rangeConfig={getRangeConfig(MOON_SCALE.id)}
+              onSetHalfWidth={setManualHalfWidth}
+              onResetHalfWidth={clearManualHalfWidth}
+              hasManualHalfWidth={Number.isFinite(manualHalfWidths[MOON_SCALE.id])}
+            />
           </div>
 
           <PositionsTable

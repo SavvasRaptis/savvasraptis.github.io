@@ -1,6 +1,18 @@
 // Panel wrapper that renders a single plot + export controls.
 
-function PlotPanel({ scale, ctx, onHover, onSelect, onFocus, wide, showLegend }) {
+function PlotPanel({
+  scale,
+  ctx,
+  onHover,
+  onSelect,
+  onFocus,
+  wide,
+  showLegend,
+  rangeConfig,
+  onSetHalfWidth,
+  onResetHalfWidth,
+  hasManualHalfWidth,
+}) {
   const hostRef = React.useRef(null);
   React.useEffect(() => {
     try {
@@ -69,6 +81,22 @@ function PlotPanel({ scale, ctx, onHover, onSelect, onFocus, wide, showLegend })
     img.src = url;
   };
 
+  const promptRange = (e) => {
+    e.stopPropagation();
+    if (!rangeConfig || !onSetHalfWidth) return;
+    const nextRaw = window.prompt(
+      `Set ± range for ${scale.name} (${rangeConfig.unit}). Allowed: ${rangeConfig.min} to ${rangeConfig.max}`,
+      String(scale.halfWidth)
+    );
+    if (nextRaw == null || nextRaw.trim() === '') return;
+    onSetHalfWidth(scale.id, nextRaw);
+  };
+
+  const resetRange = (e) => {
+    e.stopPropagation();
+    if (onResetHalfWidth) onResetHalfWidth(scale.id);
+  };
+
   return (
     <div className={'panel' + (wide ? ' panel-wide' : '')}>
       <div className="panel-head">
@@ -79,6 +107,10 @@ function PlotPanel({ scale, ctx, onHover, onSelect, onFocus, wide, showLegend })
         </div>
         <div className="panel-actions">
           <button onClick={() => onFocus(scale)} title="Focus this panel">⤢</button>
+          <button onClick={promptRange} title={`Set range (${rangeConfig?.unit || ''})`}>RANGE</button>
+          {hasManualHalfWidth && (
+            <button onClick={resetRange} title="Reset auto/default range">AUTO</button>
+          )}
           <button onClick={exportSVG} title="Export SVG">SVG</button>
           <button onClick={exportPNG} title="Export PNG">PNG</button>
         </div>
