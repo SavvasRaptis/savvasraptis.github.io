@@ -119,6 +119,7 @@
 
       (async function boot() {
         try {
+          const _scvBuildBust = Date.now();
           if (window.location.protocol === 'file:') {
             throw new Error(
               'This viewer must be opened through a local web server.\n' +
@@ -150,15 +151,23 @@
             ],
             { crossorigin: 'anonymous' }
           );
+          await loadFromAny(
+            [
+              'https://cdn.plot.ly/plotly-2.35.2.min.js',
+              'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js',
+              'https://unpkg.com/plotly.js-dist-min@2.35.2/plotly.min.js',
+            ],
+            { crossorigin: 'anonymous' }
+          );
 
-          await loadLocalJs('./models.js');
-          await loadLocalJs('./spacecraft.js');
-          await loadLocalJs('./plot.js');
+          await loadLocalJs(`./models.js?v=${_scvBuildBust}`);
+          await loadLocalJs(`./spacecraft.js?v=${_scvBuildBust}`);
+          await loadLocalJs(`./plot.js?v=${_scvBuildBust}`);
 
-          await runBabelFile('./Sidebar.jsx');
-          await runBabelFile('./Inspector.jsx');
-          await runBabelFile('./PlotPanel.jsx');
-          await runBabelFile('./App.jsx');
+          await runBabelFile(`./Sidebar.jsx?v=${_scvBuildBust}`);
+          await runBabelFile(`./Inspector.jsx?v=${_scvBuildBust}`);
+          await runBabelFile(`./PlotPanel.jsx?v=${_scvBuildBust}`);
+          await runBabelFile(`./App.jsx?v=${_scvBuildBust}`);
         } catch (err) {
           renderBootError(
             `Viewer boot failed:\n${err && (err.stack || err.message) ? (err.stack || err.message) : String(err)}`

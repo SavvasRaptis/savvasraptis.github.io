@@ -22,6 +22,16 @@ const GROUPS = {
 };
 
 const SYMBOLS = ['circle', 'square', 'triangle', 'diamond', 'star', 'cross', 'triangleDown', 'pentagon'];
+const PLANET_IDS = ['MERCURY', 'VENUS', 'MARS', 'JUPITER', 'SATURN', 'URANUS', 'NEPTUNE'];
+const PLANETS = [
+  { id: 'MERCURY', name: 'Mercury', color: '#8a7d72' },
+  { id: 'VENUS', name: 'Venus', color: '#c89648' },
+  { id: 'MARS', name: 'Mars', color: '#b85f4e' },
+  { id: 'JUPITER', name: 'Jupiter', color: '#b99572' },
+  { id: 'SATURN', name: 'Saturn', color: '#c7ad76' },
+  { id: 'URANUS', name: 'Uranus', color: '#6cb5c7' },
+  { id: 'NEPTUNE', name: 'Neptune', color: '#4d79c9' },
+];
 
 // id = frontend selector key and backend API key in /positions response
 const CATALOG = [
@@ -99,6 +109,29 @@ async function fetchPositions(ids, startISO, endISO, step = '1h', signal) {
   return normalized;
 }
 
+async function fetchPlanetPositions(ids, startISO, endISO, step = '1h', signal) {
+  const idsList = Array.isArray(ids) ? ids : String(ids).split(',').map((s) => s.trim()).filter(Boolean);
+  const cleanIds = idsList.map((id) => String(id).toUpperCase()).filter((id) => PLANET_IDS.includes(id));
+  if (!cleanIds.length) return {};
+  const url = buildUrl('/planets', {
+    ids: cleanIds.join(','),
+    start: startISO,
+    end: endISO,
+    step,
+  });
+  const response = await fetch(url, { signal });
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`Planet positions fetch failed (${response.status}): ${body || 'no response body'}`);
+  }
+  const payload = await response.json();
+  const normalized = {};
+  for (const [key, value] of Object.entries(payload)) {
+    normalized[key] = Array.isArray(value) ? value.map(normalizePoint) : [];
+  }
+  return normalized;
+}
+
 async function generatePositions(sc, startISO, endISO, step = '1h', signal) {
   const payload = await fetchPositions([sc.id], startISO, endISO, step, signal);
   return payload[sc.id] || [];
@@ -141,7 +174,9 @@ window.SC_DATA = {
   GROUPS,
   SYMBOLS,
   CATALOG,
+  PLANETS,
   fetchPositions,
+  fetchPlanetPositions,
   generatePositions,
   generateYear,
   fetchCatalog,

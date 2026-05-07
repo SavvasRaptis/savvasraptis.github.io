@@ -18,6 +18,15 @@ STEP_RE = {"m", "h", "d"}
 IMAP_EARLIEST_UTC = datetime(2025, 9, 24, 13, 1, 9, tzinfo=UTC)
 JUICE_EARLIEST_UTC = datetime(2023, 4, 14, 12, 43, 27, tzinfo=UTC)
 CACHE_VERSION = "gse_ecliptic_v2"
+PLANET_IDS: dict[str, str] = {
+    "MERCURY": "199",
+    "VENUS": "299",
+    "MARS": "499",
+    "JUPITER": "599",
+    "SATURN": "699",
+    "URANUS": "799",
+    "NEPTUNE": "899",
+}
 
 # Astroquery currently emits a noisy deprecation around id_type internals.
 warnings.filterwarnings(
@@ -40,6 +49,16 @@ def parse_ids(ids_csv: str) -> list[Spacecraft]:
     if missing:
         raise ValueError(f"Unsupported spacecraft id(s): {', '.join(missing)}")
     return [SPACECRAFT_BY_ID[item] for item in ids]
+
+
+def parse_planet_ids(ids_csv: str) -> list[str]:
+    ids = [item.strip().upper() for item in ids_csv.split(",") if item.strip()]
+    if not ids:
+        raise ValueError("At least one planet id is required.")
+    missing = [item for item in ids if item not in PLANET_IDS]
+    if missing:
+        raise ValueError(f"Unsupported planet id(s): {', '.join(missing)}")
+    return ids
 
 
 def parse_iso_utc(value: str) -> datetime:
@@ -235,4 +254,52 @@ def gse_track_for_spacecraft(
     ]
     if rows:
         write_json_cache(cache_root, spacecraft.id, start, end, cache_step, rows)
+    return rows
+
+
+def gse_track_for_planet(
+    planet_id: str,
+    start: str,
+    end: str,
+    step: str,
+    *,
+    cache_root,
+    chunk_days: int,
+    sun_cache: dict[tuple[str, str, str], tuple[list[str], np.ndarray]],
+) -> list[dict[str, float | str]]:
+    planet_horizons_id = PLANET_IDS[planet_id]
+    cache_step = f"{step}|{CACHE_VERSION}|planet:{planet_horizons_id}"
+    cached = read_json_cache(cache_root, f"PLANET_{planet_id}", start, end, cache_step)
+    if cached is not None:
+        return cached
+
+    start_dt = parse_iso_utc(start)
+    end_dt = parse_iso_utc(end)
+    if end_dt <= start_dt:
+        raise ValueError("end must be after start.")
+
+    step_value, _ = parse_step(step)
+    key = (start, end, step_value)
+    if key not in sun_cache:
+        sun_cache[key] = fetch_horizons_vectors("10", start_dt, end_dt, step_value, chunk_days)
+    sun_epochs, sun_vectors = sun_cache[key]
+
+    planet_epochs, planet_vectors = fetch_horizons_vectors(planet_horizons_id, start_dt, end_dt, step_value, chunk_days)
+    size = min(len(planet_epochs), len(sun_epochs), len(planet_vectors), len(sun_vectors))
+    planet_epochs = planet_epochs[:size]
+    planet_vectors = planet_vectors[:size]
+    sun_vectors = sun_vectors[:size]
+
+    gse_km = rotate_to_gse(planet_vectors, sun_vectors)
+    rows = [
+        {
+            "t": planet_epochs[i],
+            "x": float(gse_km[i, 0]),
+            "y": float(gse_km[i, 1]),
+            "z": float(gse_km[i, 2]),
+        }
+        for i in range(size)
+    ]
+    if rows:
+        write_json_cache(cache_root, f"PLANET_{planet_id}", start, end, cache_step, rows)
     return rows

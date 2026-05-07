@@ -2,27 +2,31 @@
 
 const { GROUPS: INSP_GROUPS, AU_KM: INSP_AU_KM, RE_KM: INSP_RE_KM } = window.SC_DATA;
 
-function Inspector({ sc, snapshot, epochLabel, onClose }) {
+function formatAdaptive(kmValue) {
+  const reValue = kmValue / INSP_RE_KM;
+  if (Math.abs(reValue) < 500) {
+    return `${reValue.toFixed(2)} Rₑ`;
+  }
+  return `${(kmValue / INSP_AU_KM).toFixed(4)} AU`;
+}
+
+function formatKmPretty(v) {
+  const abs = Math.abs(v);
+  if (abs >= 1e6) return (v / 1e6).toFixed(abs >= 1e8 ? 1 : 3) + ' × 10⁶ km';
+  if (abs >= 1e3) return v.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' km';
+  return v.toFixed(1) + ' km';
+}
+
+function Inspector({ sc, snapshot, rows, epochLabel, onSelectSc, onClose }) {
   if (!sc || !snapshot) return null;
   const { x, y, z } = snapshot;
   const rKm = Math.sqrt(x*x + y*y + z*z);
   const sunDistKm = Math.sqrt((x - INSP_AU_KM)**2 + y*y + z*z);
-  const useReForX = sc.group === 'solar_l1' || sc.group === 'magnetospheric';
-
-  // Human-readable km with thousand separators — no scientific notation for coords
-  const fmtKm = (v) => {
-    const abs = Math.abs(v);
-    if (abs >= 1e6) return (v / 1e6).toFixed(abs >= 1e8 ? 1 : 3) + ' × 10⁶ km';
-    if (abs >= 1e3) return v.toLocaleString('en-US', { maximumFractionDigits: 0 }) + ' km';
-    return v.toFixed(1) + ' km';
-  };
-  const fmtRe = (v) => (v / INSP_RE_KM).toFixed(2);
-  const fmtAu = (v) => (v / INSP_AU_KM).toFixed(4);
+  const fmtAdaptiveAxis = (v) => formatAdaptive(v);
 
   const hue = sc.hue ?? INSP_GROUPS[sc.group].hue;
   const col = `oklch(0.55 0.17 ${hue})`;
 
-  // inline SC symbol
   const symRef = React.useRef(null);
   React.useEffect(() => {
     if (!symRef.current) return;
@@ -56,9 +60,9 @@ function Inspector({ sc, snapshot, epochLabel, onClose }) {
         <h4>GSE position</h4>
         <table className="kv">
           <tbody>
-            <tr><td>X</td><td className="num">{useReForX ? `${fmtRe(x)} Rₑ` : `${fmtAu(x)} AU`}</td><td className="num dim">{fmtKm(x)}</td></tr>
-            <tr><td>Y</td><td className="num">{fmtRe(y)} Rₑ</td><td className="num dim">{fmtKm(y)}</td></tr>
-            <tr><td>Z</td><td className="num">{fmtRe(z)} Rₑ</td><td className="num dim">{fmtKm(z)}</td></tr>
+            <tr><td>X</td><td className="num">{fmtAdaptiveAxis(x)}</td><td className="num dim">{formatKmPretty(x)}</td></tr>
+            <tr><td>Y</td><td className="num">{fmtAdaptiveAxis(y)}</td><td className="num dim">{formatKmPretty(y)}</td></tr>
+            <tr><td>Z</td><td className="num">{fmtAdaptiveAxis(z)}</td><td className="num dim">{formatKmPretty(z)}</td></tr>
           </tbody>
         </table>
       </section>
@@ -67,37 +71,66 @@ function Inspector({ sc, snapshot, epochLabel, onClose }) {
         <table className="kv">
           <tbody>
             <tr><td>to Earth</td>
-              <td className="num">{rKm > 1e7 ? `${fmtAu(rKm)} AU` : `${fmtRe(rKm)} Rₑ`}</td>
-              <td className="num dim">{fmtKm(rKm)}</td></tr>
+              <td className="num">{formatAdaptive(rKm)}</td>
+              <td className="num dim">{formatKmPretty(rKm)}</td></tr>
             <tr><td>to Sun</td>
-              <td className="num">{fmtAu(sunDistKm)} AU</td>
-              <td className="num dim">{fmtKm(sunDistKm)}</td></tr>
+              <td className="num">{formatAdaptive(sunDistKm)}</td>
+              <td className="num dim">{formatKmPretty(sunDistKm)}</td></tr>
           </tbody>
         </table>
       </section>
+      <section>
+        <h4>Selected Spacecrafts</h4>
+        <CompactRowsTable rows={rows} selectedId={sc.id} onSelect={onSelectSc} />
+      </section>
+    </div>
+  );
+}
+
+function CompactRowsTable({ rows, selectedId, onSelect }) {
+  return (
+    <div className="table-wrap compact">
+      <table className="ptable ptable-compact">
+        <thead>
+          <tr>
+            <th>Spacecraft</th>
+            <th>Group</th>
+            <th>X</th>
+            <th>Y</th>
+            <th>Z</th>
+            <th>R</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id} className={selectedId === r.id ? 'sel' : ''} onClick={() => onSelect?.(r.id)}>
+              <td>{r.name}</td>
+              <td className="dim">{INSP_GROUPS[r.group].label}</td>
+              <td className="num">{formatAdaptive(r.x_km)}</td>
+              <td className="num">{formatAdaptive(r.y_km)}</td>
+              <td className="num">{formatAdaptive(r.z_km)}</td>
+              <td className="num">{formatAdaptive(r.rEarth_km)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
 
 window.Inspector = Inspector;
 
-
 function PositionsTable({ rows, sortKey, sortDir, onSort, onSelect, selectedId }) {
   const headers = [
-    { k: 'name',     l: 'Spacecraft' },
-    { k: 'group',    l: 'Group' },
-    { k: 'x_au',     l: 'X (AU)' },
-    { k: 'y_re',     l: 'Y (Rₑ)' },
-    { k: 'z_re',     l: 'Z (Rₑ)' },
-    { k: 'rEarth',   l: 'r to Earth (km)' },
-    { k: 'rSun',     l: 'r to Sun (AU)' },
+    { k: 'name',      l: 'Spacecraft' },
+    { k: 'group',     l: 'Group' },
+    { k: 'x_km',      l: 'X' },
+    { k: 'y_km',      l: 'Y' },
+    { k: 'z_km',      l: 'Z' },
+    { k: 'rEarth_km', l: 'r to Earth' },
+    { k: 'rSun_au',   l: 'r to Sun (AU)' },
   ];
-  const fmtKmShort = (v) => {
-    const abs = Math.abs(v);
-    if (abs >= 1e6) return (v / 1e6).toFixed(2) + ' M';
-    if (abs >= 1e3) return Math.round(v).toLocaleString('en-US');
-    return v.toFixed(0);
-  };
+
   return (
     <div className="table-wrap">
       <table className="ptable">
@@ -124,11 +157,11 @@ function PositionsTable({ rows, sortKey, sortDir, onSort, onSelect, selectedId }
                   {r.name}
                 </td>
                 <td className="dim">{INSP_GROUPS[r.group].label}</td>
-                <td className="num">{r.x_au.toFixed(4)}</td>
-                <td className="num">{r.y_re.toFixed(2)}</td>
-                <td className="num">{r.z_re.toFixed(2)}</td>
-                <td className="num">{fmtKmShort(r.rEarth)}</td>
-                <td className="num">{r.rSun.toFixed(4)}</td>
+                <td className="num">{formatAdaptive(r.x_km)}</td>
+                <td className="num">{formatAdaptive(r.y_km)}</td>
+                <td className="num">{formatAdaptive(r.z_km)}</td>
+                <td className="num">{formatAdaptive(r.rEarth_km)}</td>
+                <td className="num">{r.rSun_au.toFixed(4)}</td>
               </tr>
             );
           })}

@@ -1,6 +1,6 @@
 // Professional 2D plot builder. Returns an <svg>.
 // scale: { name, plane, unit, halfWidth, center, id? }
-// ctx:   { selected, tracks, showBS, showMP, showOrbits, showLabels, showL1L2, showMoon,
+// ctx:   { selected, tracks, planets, planetTracks, showBS, showMP, showOrbits, showLabels, showL1L2, showMoon, showPlanets,
 //          selectedScId, hoveredId, endDate }
 // opts:  { width, height, fontScale, showLegend }
 
@@ -375,6 +375,31 @@ function buildPlot(scale, ctx, opts = {}) {
     }
   }
 
+  // --- Planet markers (marker-only overlay)
+  if (ctx.showPlanets && Array.isArray(ctx.planets)) {
+    for (const planet of ctx.planets) {
+      const track = ctx.planetTracks?.[planet.id];
+      if (!Array.isArray(track) || track.length === 0) continue;
+      const last = track[track.length - 1];
+      const [px, py] = worldToScreen(last);
+      const visible = px > PAD_L - 20 && px < PAD_L + plotW + 20 && py > PAD_T - 20 && py < PAD_T + plotH + 20;
+      if (!visible) continue;
+      const color = planet.color || '#888';
+      content.appendChild(el('circle', { cx: px, cy: py, r: 6.5 * fs, fill: color, stroke: '#fff', 'stroke-width': 1.5 }));
+      content.appendChild(el('text', {
+        x: px + 9 * fs,
+        y: py - 7 * fs,
+        'font-size': bodyLabelSize * 0.92,
+        'font-weight': 700,
+        fill: 'oklch(0.12 0.01 260)',
+        'paint-order': 'stroke',
+        stroke: '#fff',
+        'stroke-width': 3.5,
+        'stroke-linejoin': 'round',
+      }, planet.name));
+    }
+  }
+
   // --- Spacecraft
   const hideOnSystem = new Set(['magnetospheric', 'solar_l1']);
   const ordered = [...ctx.selected].sort((a, b) => {
@@ -391,7 +416,7 @@ function buildPlot(scale, ctx, opts = {}) {
     const track = ctx.tracks.get(sc.id);
     if (!track || track.length === 0) continue;
     const hue = sc.hue ?? GROUPS[sc.group].hue;
-    const color = `oklch(0.52 0.17 ${hue})`;
+    const color = `hsl(${Math.round(hue)},70%,45%)`;
     const isSelected = sc.id === ctx.selectedScId;
     const isHovered = sc.id === ctx.hoveredId;
 
@@ -557,5 +582,522 @@ function buildPlot(scale, ctx, opts = {}) {
   return svg;
 }
 
-window.SC_PLOT = { buildPlot, drawSymbol };
+function build3DTraces(scale, ctx) {
+  const unitKm = scale.unit === 'AU' ? AU_KM : RE_KM;
+  const traces = [];
+
+  for (const sc of ctx.selected || []) {
+    const track = ctx.tracks?.get(sc.id);
+    if (!Array.isArray(track) || track.length === 0) continue;
+    const hue = sc.hue ?? GROUPS[sc.group].hue;
+    const color = `hsl(${Math.round(hue)},70%,45%)`;
+    traces.push({
+      type: 'scatter3d',
+      mode: 'lines+markers',
+      name: sc.name,
+      x: track.map((p) => (p.x - scale.center.x) / unitKm),
+      y: track.map((p) => (p.y - scale.center.y) / unitKm),
+      z: track.map((p) => (p.z - scale.center.z) / unitKm),
+      line: { color, width: sc.id === ctx.selectedScId ? 5 : 2 },
+      marker: { color, size: sc.id === ctx.selectedScId ? 4 : 2 },
+    });
+  }
+
+  if (ctx.showPlanets && Array.isArray(ctx.planets)) {
+    for (const planet of ctx.planets) {
+      const track = ctx.planetTracks?.[planet.id];
+      if (!Array.isArray(track) || track.length === 0) continue;
+      const p = track[track.length - 1];
+      traces.push({
+        type: 'scatter3d',
+        mode: 'markers+text',
+        name: planet.name,
+        x: [(p.x - scale.center.x) / unitKm],
+        y: [(p.y - scale.center.y) / unitKm],
+        z: [(p.z - scale.center.z) / unitKm],
+        marker: { size: 6, color: planet.color || '#777' },
+        text: [planet.name],
+        textposition: 'top center',
+      });
+    }
+  }
+
+  traces.push({
+    type: 'scatter3d',
+    mode: 'markers+text',
+    name: 'Earth',
+    x: [(-scale.center.x) / unitKm],
+    y: [(-scale.center.y) / unitKm],
+    z: [(-scale.center.z) / unitKm],
+    marker: { size: 8, color: '#2b62cc' },
+    text: ['Earth'],
+    textposition: 'bottom center',
+  });
+
+  return { traces, unitKm };
+}
+
+function build3DFallbackCanvas(host, scale, ctx) {
+  host.innerHTML = '';
+  const canvas = document.createElement('canvas');
+  const rect = host.getBoundingClientRect();
+  const w = Math.max(500, Math.floor(rect.width || host.clientWidth || 900));
+  const h = Math.max(360, Math.floor(rect.height || host.clientHeight || 560));
+  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  canvas.style.display = 'block';
+  canvas.style.margin = '0 auto';
+  canvas.style.background = '#fff';
+  host.appendChild(canvas);
+  const g = canvas.getContext('2d');
+  if (!g) return () => {};
+  g.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const unitKm = scale.unit === 'AU' ? AU_KM : RE_KM;
+  const half = scale.halfWidth;
+  const series = [];
+  for (const sc of ctx.selected || []) {
+    const track = ctx.tracks?.get(sc.id);
+    if (!Array.isArray(track) || track.length === 0) continue;
+    const hue = sc.hue ?? GROUPS[sc.group].hue;
+    const color = `hsl(${Math.round(hue)},70%,45%)`;
+    series.push({
+      id: sc.id,
+      name: sc.name,
+      color,
+      selected: sc.id === ctx.selectedScId,
+      points: track.map((p) => ({
+        x: (p.x - scale.center.x) / unitKm,
+        y: (p.y - scale.center.y) / unitKm,
+        z: (p.z - scale.center.z) / unitKm,
+      })),
+    });
+  }
+
+  const planets = [];
+  if (ctx.showPlanets && Array.isArray(ctx.planets)) {
+    for (const planet of ctx.planets) {
+      const track = ctx.planetTracks?.[planet.id];
+      if (!Array.isArray(track) || track.length === 0) continue;
+      const p = track[track.length - 1];
+      planets.push({
+        name: planet.name,
+        color: planet.color || '#777',
+        point: {
+          x: (p.x - scale.center.x) / unitKm,
+          y: (p.y - scale.center.y) / unitKm,
+          z: (p.z - scale.center.z) / unitKm,
+        },
+      });
+    }
+  }
+
+  let yaw = 0.9;
+  let pitch = 0.45;
+  let zoom = 1.0;
+  let isDown = false;
+  let lastX = 0;
+  let lastY = 0;
+  const scalePxBase = 0.42 * Math.min(w, h) / Math.max(half, 1);
+
+  const rot = (p) => {
+    const cy = Math.cos(yaw), sy = Math.sin(yaw);
+    const cp = Math.cos(pitch), sp = Math.sin(pitch);
+    const x1 = cy * p.x + sy * p.z;
+    const z1 = -sy * p.x + cy * p.z;
+    const y2 = cp * p.y - sp * z1;
+    const z2 = sp * p.y + cp * z1;
+    return { x: x1, y: y2, z: z2 };
+  };
+  const proj = (p) => {
+    const d = 2.6 * half;
+    const f = d / (d - p.z);
+    const scalePx = scalePxBase * zoom;
+    return {
+      sx: w / 2 + p.x * scalePx * f,
+      sy: h / 2 - p.y * scalePx * f,
+      depth: p.z,
+      f,
+    };
+  };
+
+  const pointFromKm = (xKm, yKm = 0, zKm = 0) => ({
+    x: (xKm - scale.center.x) / unitKm,
+    y: (yKm - scale.center.y) / unitKm,
+    z: (zKm - scale.center.z) / unitKm,
+  });
+
+  const isOnScreen = (pp, pad = 24) =>
+    pp.sx > -pad && pp.sx < w + pad && pp.sy > -pad && pp.sy < h + pad;
+
+  const drawCube = () => {
+    const c = [
+      { x: -half, y: -half, z: -half }, { x: half, y: -half, z: -half },
+      { x: half, y: half, z: -half }, { x: -half, y: half, z: -half },
+      { x: -half, y: -half, z: half }, { x: half, y: -half, z: half },
+      { x: half, y: half, z: half }, { x: -half, y: half, z: half },
+    ].map((p) => proj(rot(p)));
+    const edges = [
+      [0,1],[1,2],[2,3],[3,0],
+      [4,5],[5,6],[6,7],[7,4],
+      [0,4],[1,5],[2,6],[3,7],
+    ];
+    g.strokeStyle = 'rgba(120,130,145,0.28)';
+    g.lineWidth = 1;
+    for (const [a, b] of edges) {
+      g.beginPath();
+      g.moveTo(c[a].sx, c[a].sy);
+      g.lineTo(c[b].sx, c[b].sy);
+      g.stroke();
+    }
+  };
+
+  const drawGrid = () => {
+    const steps = [-0.75, -0.5, -0.25, 0.25, 0.5, 0.75].map((m) => m * half);
+    g.strokeStyle = 'rgba(140,150,165,0.16)';
+    g.lineWidth = 1;
+    for (const v of steps) {
+      const x1 = proj(rot({ x: -half, y: v, z: 0 }));
+      const x2 = proj(rot({ x: half, y: v, z: 0 }));
+      const y1 = proj(rot({ x: v, y: -half, z: 0 }));
+      const y2 = proj(rot({ x: v, y: half, z: 0 }));
+      g.beginPath(); g.moveTo(x1.sx, x1.sy); g.lineTo(x2.sx, x2.sy); g.stroke();
+      g.beginPath(); g.moveTo(y1.sx, y1.sy); g.lineTo(y2.sx, y2.sy); g.stroke();
+    }
+  };
+
+  const draw = () => {
+    g.clearRect(0, 0, w, h);
+    const bg = g.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, '#fcfcfd');
+    bg.addColorStop(1, '#f3f5f8');
+    g.fillStyle = bg;
+    g.fillRect(0, 0, w, h);
+
+    g.strokeStyle = '#d4d9e1';
+    g.lineWidth = 1;
+    g.strokeRect(0.5, 0.5, w - 1, h - 1);
+
+    drawGrid();
+    drawCube();
+
+    const unitLabel = scale.unit === 'Re' ? 'Rₑ' : scale.unit;
+    const axes = [
+      { key: `X (${unitLabel})`, a: { x: -half, y: 0, z: 0 }, b: { x: half, y: 0, z: 0 }, c: '#d1495b' },
+      { key: `Y (${unitLabel})`, a: { x: 0, y: -half, z: 0 }, b: { x: 0, y: half, z: 0 }, c: '#2a9d8f' },
+      { key: `Z (${unitLabel})`, a: { x: 0, y: 0, z: -half }, b: { x: 0, y: 0, z: half }, c: '#3a86ff' },
+    ];
+    for (const ax of axes) {
+      const p1 = proj(rot(ax.a));
+      const p2 = proj(rot(ax.b));
+      const vx = p2.sx - p1.sx;
+      const vy = p2.sy - p1.sy;
+      const vlen = Math.hypot(vx, vy) || 1;
+      const ux = vx / vlen;
+      const uy = vy / vlen;
+      const px = -uy;
+      const py = ux;
+      g.strokeStyle = ax.c;
+      g.lineWidth = 1.7;
+      g.beginPath();
+      g.moveTo(p1.sx, p1.sy);
+      g.lineTo(p2.sx, p2.sy);
+      g.stroke();
+
+      // Positive direction arrowhead.
+      const ah = 10;
+      const aw = 4.2;
+      g.fillStyle = ax.c;
+      g.beginPath();
+      g.moveTo(p2.sx, p2.sy);
+      g.lineTo(p2.sx - ux * ah + px * aw, p2.sy - uy * ah + py * aw);
+      g.lineTo(p2.sx - ux * ah - px * aw, p2.sy - uy * ah - py * aw);
+      g.closePath();
+      g.fill();
+
+      // Smart ticks and labels.
+      const tickVals = [-half, -half * 0.5, 0, half * 0.5, half];
+      for (const tv of tickVals) {
+        const p = ax.key[0] === 'X'
+          ? proj(rot({ x: tv, y: 0, z: 0 }))
+          : ax.key[0] === 'Y'
+            ? proj(rot({ x: 0, y: tv, z: 0 }))
+            : proj(rot({ x: 0, y: 0, z: tv }));
+        const tl = 4.5;
+        g.strokeStyle = 'rgba(50,60,75,0.55)';
+        g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(p.sx - px * tl, p.sy - py * tl);
+        g.lineTo(p.sx + px * tl, p.sy + py * tl);
+        g.stroke();
+        if (tv !== 0) {
+          g.fillStyle = 'rgba(31,41,55,0.75)';
+          g.font = '600 9px Inter Tight, sans-serif';
+          const tvTxt = Math.abs(tv) >= 100 ? tv.toFixed(0) : (Math.abs(tv) >= 10 ? tv.toFixed(1) : tv.toFixed(2));
+          g.fillText(tvTxt, p.sx + px * 7, p.sy + py * 7);
+        }
+      }
+      g.fillStyle = ax.c;
+      g.font = '700 11px Inter Tight, sans-serif';
+      g.fillText(ax.key, p2.sx + 6, p2.sy - 4);
+    }
+
+    // 3D Bow-shock / Magnetopause wireframes (Earth-centered context only).
+    const canDrawGeoSurfaces = scale.unit === 'Re' && Math.abs(scale.center.x) < 3 * RE_KM;
+    const drawSurface = (curvePts, stroke, dashed) => {
+      if (!Array.isArray(curvePts) || !curvePts.length) return;
+      const lonCount = 12;
+      const lons = [];
+      for (let i = 0; i < lonCount; i++) lons.push((i / lonCount) * Math.PI * 2);
+      g.save();
+      g.strokeStyle = stroke;
+      g.lineWidth = 1.1;
+      g.setLineDash(dashed ? [5, 4] : []);
+      for (const lon of lons) {
+        let started = false;
+        g.beginPath();
+        for (const p of curvePts) {
+          const world = {
+            x: p.x * RE_KM,
+            y: p.rho * Math.cos(lon) * RE_KM,
+            z: p.rho * Math.sin(lon) * RE_KM,
+          };
+          const q = proj(rot(pointFromKm(world.x, world.y, world.z)));
+          if (!started) {
+            g.moveTo(q.sx, q.sy);
+            started = true;
+          } else {
+            g.lineTo(q.sx, q.sy);
+          }
+        }
+        g.stroke();
+      }
+      g.restore();
+    };
+    if (canDrawGeoSurfaces) {
+      if (ctx.showBS) drawSurface(window.SC_MODELS.bowshock(), 'rgba(72,115,185,0.7)', true);
+      if (ctx.showMP) drawSurface(window.SC_MODELS.magnetopause(), 'rgba(35,75,155,0.85)', false);
+    }
+
+    const drawSeries = [...series].sort((a, b) => {
+      const az = a.points.length ? a.points[a.points.length - 1].z : 0;
+      const bz = b.points.length ? b.points[b.points.length - 1].z : 0;
+      return az - bz;
+    });
+    for (const s of drawSeries) {
+      if (!s.points.length) continue;
+      g.strokeStyle = s.color;
+      g.lineWidth = s.selected ? 2.8 : 1.7;
+      g.globalAlpha = s.selected ? 0.95 : 0.7;
+      g.beginPath();
+      s.points.forEach((p, i) => {
+        const pp = proj(rot(p));
+        if (i === 0) g.moveTo(pp.sx, pp.sy);
+        else g.lineTo(pp.sx, pp.sy);
+      });
+      g.stroke();
+      const lp = s.points[s.points.length - 1];
+      if (lp) {
+        const pp = proj(rot(lp));
+        if (s.selected) {
+          g.globalAlpha = 0.2;
+          g.fillStyle = s.color;
+          g.beginPath();
+          g.arc(pp.sx, pp.sy, 10, 0, Math.PI * 2);
+          g.fill();
+        }
+        g.globalAlpha = 1;
+        g.fillStyle = s.color;
+        g.beginPath();
+        g.arc(pp.sx, pp.sy, s.selected ? 5 : 3.4, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = '#ffffff';
+        g.lineWidth = 1.3;
+        g.stroke();
+        if (ctx.showLabels || s.selected) {
+          g.fillStyle = '#1f2937';
+          g.font = s.selected ? '700 12px Inter Tight, sans-serif' : '600 11px Inter Tight, sans-serif';
+          g.fillText(s.name, pp.sx + 8, pp.sy - 8);
+        }
+      }
+    }
+    g.globalAlpha = 1;
+
+    // Reference bodies/points based on the actual centered frame.
+    const earth = proj(rot(pointFromKm(0, 0, 0)));
+    if (isOnScreen(earth)) {
+      g.fillStyle = '#2b62cc';
+      g.beginPath();
+      g.arc(earth.sx, earth.sy, 6, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = '#fff';
+      g.lineWidth = 1.5;
+      g.stroke();
+      g.fillStyle = '#183a7a';
+      g.font = '700 11px Inter Tight, sans-serif';
+      g.fillText('Earth', earth.sx + 8, earth.sy + 12);
+    }
+
+    const sun = proj(rot(pointFromKm(AU_KM, 0, 0)));
+    if (isOnScreen(sun)) {
+      g.fillStyle = '#f59e0b';
+      g.beginPath();
+      g.arc(sun.sx, sun.sy, 7, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = '#fff';
+      g.lineWidth = 1.5;
+      g.stroke();
+      g.fillStyle = '#92400e';
+      g.font = '700 11px Inter Tight, sans-serif';
+      g.fillText('Sun', sun.sx + 9, sun.sy + 11);
+    }
+
+    if (scale.id === 'l1' || ctx.showL1L2) {
+      const l1 = proj(rot(pointFromKm(L1_KM, 0, 0)));
+      if (isOnScreen(l1)) {
+        g.fillStyle = '#fff';
+        g.strokeStyle = '#0f172a';
+        g.lineWidth = 1.4;
+        g.beginPath();
+        g.moveTo(l1.sx, l1.sy - 7);
+        g.lineTo(l1.sx + 7, l1.sy);
+        g.lineTo(l1.sx, l1.sy + 7);
+        g.lineTo(l1.sx - 7, l1.sy);
+        g.closePath();
+        g.fill();
+        g.stroke();
+        g.fillStyle = '#111827';
+        g.font = '700 10px Inter Tight, sans-serif';
+        g.fillText('L1', l1.sx + 9, l1.sy - 8);
+      }
+    }
+
+    for (const pl of planets) {
+      const pp = proj(rot(pl.point));
+      g.fillStyle = pl.color;
+      g.beginPath();
+      g.arc(pp.sx, pp.sy, 4.5, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = '#fff';
+      g.lineWidth = 1.2;
+      g.stroke();
+      g.fillStyle = '#374151';
+      g.font = '600 10px Inter Tight, sans-serif';
+      g.fillText(pl.name, pp.sx + 7, pp.sy - 6);
+    }
+
+    g.fillStyle = '#1f2937';
+    g.font = '700 13px Inter Tight, sans-serif';
+    g.fillText(`${scale.name} · XYZ`, 12, 20);
+    g.font = '500 11px Inter Tight, sans-serif';
+    g.fillStyle = '#6b7280';
+    g.fillText('Drag to rotate · Wheel to zoom · Double-click to reset', 12, 38);
+    g.fillText(`Axes in ${unitLabel} · centered on ${scale.id === 'l1' ? 'L1' : scale.id === 'system' ? 'Sun–Earth midpoint' : 'Earth'}`, 12, 54);
+
+    // lightweight legend
+    const legend = series.slice(0, 10);
+    if (legend.length) {
+      const lx = w - 220;
+      const geoRows = (canDrawGeoSurfaces && (ctx.showBS || ctx.showMP)) ? 1 : 0;
+      const lh = 20 + legend.length * 16 + (geoRows ? 18 : 0);
+      g.fillStyle = 'rgba(255,255,255,0.87)';
+      g.strokeStyle = 'rgba(170,180,195,0.45)';
+      g.lineWidth = 1;
+      g.beginPath();
+      if (typeof g.roundRect === 'function') g.roundRect(lx, 10, 205, lh, 6);
+      else g.rect(lx, 10, 205, lh);
+      g.fill();
+      g.stroke();
+      g.fillStyle = '#4b5563';
+      g.font = '700 10px Inter Tight, sans-serif';
+      g.fillText('SPACECRAFT', lx + 10, 24);
+      legend.forEach((s, i) => {
+        const y = 37 + i * 15;
+        g.fillStyle = s.color;
+        g.beginPath();
+        g.arc(lx + 12, y, 3.5, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#1f2937';
+        g.font = s.selected ? '700 10px Inter Tight, sans-serif' : '500 10px Inter Tight, sans-serif';
+        g.fillText(s.name, lx + 22, y + 3.5);
+      });
+      if (geoRows) {
+        const y = 37 + legend.length * 15 + 8;
+        g.strokeStyle = 'rgba(35,75,155,0.85)';
+        g.lineWidth = 1.4;
+        g.beginPath();
+        g.moveTo(lx + 8, y);
+        g.lineTo(lx + 18, y);
+        g.stroke();
+        if (ctx.showBS) {
+          g.strokeStyle = 'rgba(72,115,185,0.7)';
+          g.setLineDash([4, 3]);
+          g.beginPath();
+          g.moveTo(lx + 30, y);
+          g.lineTo(lx + 40, y);
+          g.stroke();
+          g.setLineDash([]);
+          g.fillStyle = '#1f2937';
+          g.font = '500 10px Inter Tight, sans-serif';
+          g.fillText('MP / BS', lx + 48, y + 3.5);
+        } else {
+          g.fillStyle = '#1f2937';
+          g.font = '500 10px Inter Tight, sans-serif';
+          g.fillText('Magnetopause', lx + 24, y + 3.5);
+        }
+      }
+    }
+  };
+  draw();
+
+  const onDown = (e) => { isDown = true; lastX = e.clientX; lastY = e.clientY; canvas.style.cursor = 'grabbing'; };
+  const onUp = () => { isDown = false; canvas.style.cursor = 'grab'; };
+  const onMove = (e) => {
+    if (!isDown) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    yaw += dx * 0.008;
+    pitch = Math.max(-1.4, Math.min(1.4, pitch + dy * 0.008));
+    draw();
+  };
+  const onWheel = (e) => {
+    e.preventDefault();
+    const dir = e.deltaY > 0 ? -1 : 1;
+    zoom = Math.max(0.45, Math.min(3.2, zoom * (dir > 0 ? 1.08 : 0.92)));
+    draw();
+  };
+  const onDouble = () => {
+    yaw = 0.9;
+    pitch = 0.45;
+    zoom = 1.0;
+    draw();
+  };
+  canvas.addEventListener('pointerdown', onDown);
+  canvas.style.cursor = 'grab';
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointermove', onMove);
+  canvas.addEventListener('wheel', onWheel, { passive: false });
+  canvas.addEventListener('dblclick', onDouble);
+
+  return () => {
+    canvas.removeEventListener('pointerdown', onDown);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointermove', onMove);
+    canvas.removeEventListener('wheel', onWheel);
+    canvas.removeEventListener('dblclick', onDouble);
+  };
+}
+
+function build3DPlot(host, scale, ctx) {
+  // Use a deterministic canvas renderer for reliability in this static dashboard context.
+  // Plotly can still be used later, but this guarantees 3D visibility everywhere.
+  return build3DFallbackCanvas(host, scale, ctx);
+}
+
+window.SC_PLOT = { buildPlot, drawSymbol, build3DPlot };
 })();

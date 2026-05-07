@@ -6,13 +6,15 @@ function Sidebar({
   startISO, endISO, onDateChange,
   cadence, setCadence,
   durationDays, rangeWarn,
-  onPresetMonth, onPreset,
+  onPresetMonth, onShiftWindow, onPreset,
+  activePreset,
 
   selectedIds, onToggle, onToggleGroup,
   expandedGroups, onToggleExpand,
-  showBS, showMP, showOrbits, showLabels, showL1L2,
+  showBS, showMP, showOrbits, showLabels, showL1L2, showPlanets,
   onFlag,
   showLegend, setShowLegend,
+  autoFitPairs, setAutoFitPairs,
   selectedScId, onFocusSc,
 
   downloadUnit, setDownloadUnit,
@@ -22,7 +24,15 @@ function Sidebar({
   for (const sc of SB_CATALOG) (grouped[sc.group] ||= []).push(sc);
   const { toInputDT, MAX_WINDOW_DAYS } = window.SCV_DT;
 
-  // Preserve a stable visual order for groups
+  const [draftStart, setDraftStart] = React.useState(toInputDT(startISO));
+  const [draftEnd, setDraftEnd] = React.useState(toInputDT(endISO));
+
+  React.useEffect(() => setDraftStart(toInputDT(startISO)), [startISO]);
+  React.useEffect(() => setDraftEnd(toInputDT(endISO)), [endISO]);
+
+  const commitStart = () => onDateChange('start', draftStart);
+  const commitEnd = () => onDateChange('end', draftEnd);
+
   const groupOrder = ['magnetospheric', 'solar_l1', 'inner_heli', 'deep_space'];
 
   return (
@@ -33,30 +43,45 @@ function Sidebar({
         <div className="date-row">
           <label>
             <span>Start (UTC)</span>
-            <input type="datetime-local"
+            <input
+              type="datetime-local"
               step="600"
-              value={toInputDT(startISO)}
-              onChange={e => onDateChange('start', e.target.value)} />
+              value={draftStart}
+              onChange={(e) => setDraftStart(e.target.value)}
+              onBlur={commitStart}
+              onKeyDown={(e) => { if (e.key === 'Enter') commitStart(); }}
+            />
           </label>
         </div>
         <div className="date-row">
           <label>
             <span>End (UTC)</span>
-            <input type="datetime-local"
+            <input
+              type="datetime-local"
               step="600"
-              value={toInputDT(endISO)}
-              onChange={e => onDateChange('end', e.target.value)} />
+              value={draftEnd}
+              onChange={(e) => setDraftEnd(e.target.value)}
+              onBlur={commitEnd}
+              onKeyDown={(e) => { if (e.key === 'Enter') commitEnd(); }}
+            />
           </label>
         </div>
 
         <div className="presets">
-          <button className="preset" onClick={() => onPreset(1)}>24 h</button>
-          <button className="preset" onClick={() => onPreset(7)}>7 d</button>
-          <button className="preset" onClick={() => onPresetMonth(0)}>This month</button>
-          <button className="preset" onClick={() => onPresetMonth(-1)}>Prev</button>
-          <button className="preset" onClick={() => onPresetMonth(1)}>Next</button>
+          <button className={activePreset === '24h' ? 'preset on' : 'preset'} onClick={() => onPreset(1)}>24 h</button>
+          <button className={activePreset === '7d' ? 'preset on' : 'preset'} onClick={() => onPreset(7)}>7 d</button>
+          <button className={activePreset === 'month' ? 'preset on' : 'preset'} onClick={() => onPresetMonth(0)}>This month</button>
+        </div>
+        <div className="presets nav-shift">
+          <button className="preset" onClick={() => onShiftWindow(-1)}>Prev</button>
+          <button className="preset" onClick={() => onShiftWindow(1)}>Next</button>
         </div>
 
+        {rangeWarn && <div className="warn">{rangeWarn}</div>}
+      </section>
+
+      <section className="sb-section">
+        <h3 className="sb-h">Download trajectory</h3>
         <div className="seg">
           <span className="seg-label">Cadence</span>
           <div className="seg-group">
@@ -64,13 +89,6 @@ function Sidebar({
             <button className={cadence==='hourly'?'on':''} onClick={() => setCadence('hourly')}>Hourly</button>
           </div>
         </div>
-
-        {rangeWarn && <div className="warn">{rangeWarn}</div>}
-        <p className="sb-note">Snapshot reads <strong>start</strong> epoch. Trails span the full window. Cap: {MAX_WINDOW_DAYS} days.</p>
-      </section>
-
-      <section className="sb-section">
-        <h3 className="sb-h">Download trajectory</h3>
         <div className="seg">
           <span className="seg-label">Units</span>
           <div className="seg-group">
@@ -80,11 +98,11 @@ function Sidebar({
           </div>
         </div>
         <button className="dl-btn wide" onClick={onDownloadTrajectory} title="Full trajectory at chosen cadence">
-          <span>Download CSV · selected window</span>
+          <span>Download CSV · selected window · {downloadUnit === 'Re' ? 'Rₑ' : downloadUnit}</span>
           <span className="dl-sub">{cadence === 'ten_min' ? '10-minute' : 'hourly'} samples</span>
         </button>
         <button className="dl-btn wide year" onClick={onDownloadYear} title={`Download all positions for ${new Date(startISO).getUTCFullYear()} at chosen cadence`}>
-          <span>Download CSV · whole year ({new Date(startISO).getUTCFullYear()}) · km</span>
+          <span>Download CSV · whole year ({new Date(startISO).getUTCFullYear()}) · {downloadUnit === 'Re' ? 'Rₑ' : downloadUnit}</span>
           <span className="dl-sub">{cadence === 'ten_min' ? '~52,560' : '~8,760'} samples per spacecraft (server stream)</span>
         </button>
       </section>
@@ -92,11 +110,13 @@ function Sidebar({
       <section className="sb-section">
         <h3 className="sb-h">Reference overlays</h3>
         <div className="flags">
-          <SbFlag label="Legend panel (right of each plot)" checked={showLegend} onChange={setShowLegend} />
-          <SbFlag label="Spacecraft names in plot" checked={showLabels} onChange={v => onFlag('showLabels', v)} />
-          <SbFlag label="Magnetopause (Shue 1997)" checked={showMP} onChange={v => onFlag('showMP', v)} />
+          <SbFlag label="Magnetopause" checked={showMP} onChange={v => onFlag('showMP', v)} />
           <SbFlag label="Bow shock" checked={showBS} onChange={v => onFlag('showBS', v)} />
+          <SbFlag label="Planet markers" checked={showPlanets} onChange={v => onFlag('showPlanets', v)} />
+          <SbFlag label="Spacecraft names in plot" checked={showLabels} onChange={v => onFlag('showLabels', v)} />
           <SbFlag label="L1 / L2 markers" checked={showL1L2} onChange={v => onFlag('showL1L2', v)} />
+          <SbFlag label="Legend panel" checked={showLegend} onChange={setShowLegend} />
+          <SbFlag label="Auto-fit subplot pairs" checked={autoFitPairs} onChange={setAutoFitPairs} />
         </div>
       </section>
 
@@ -152,7 +172,6 @@ function Sidebar({
   );
 }
 
-// Small inline legend symbol (uses SC_PLOT.drawSymbol into a tiny SVG)
 function SymbolSwatch({ sc }) {
   const ref = React.useRef(null);
   React.useEffect(() => {

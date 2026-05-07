@@ -88,6 +88,29 @@ def test_positions_contract_and_l1_sanity(monkeypatch):
         assert dist_re <= 100.0
 
 
+def test_planets_contract(monkeypatch):
+    monkeypatch.setattr("scviewer_api.main.gse_track_for_planet", lambda *args, **kwargs: _fake_track(None, *args[1:4], **kwargs))
+    client = TestClient(api_main.app)
+
+    response = client.get(
+        "/planets",
+        params={
+            "ids": "MERCURY,VENUS,MARS",
+            "start": "2025-01-01T00:00:00Z",
+            "end": "2025-01-02T00:00:00Z",
+            "step": "1h",
+        },
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert set(payload.keys()) == {"MERCURY", "VENUS", "MARS"}
+    for series in payload.values():
+        assert len(series) > 0
+        sample = series[0]
+        assert all(k in sample for k in ("t", "x", "y", "z"))
+        assert sample["t"].endswith("Z")
+
+
 def test_positions_year_csv(monkeypatch):
     monkeypatch.setattr("scviewer_api.main.gse_track_for_spacecraft", _fake_track)
     client = TestClient(api_main.app)

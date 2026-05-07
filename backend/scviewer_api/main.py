@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 
 from .cache_store import atomic_write_lines, year_csv_path
 from .catalog import SPACECRAFT_CATALOG
-from .service import gse_track_for_spacecraft, parse_ids, parse_step
+from .service import gse_track_for_planet, gse_track_for_spacecraft, parse_ids, parse_planet_ids, parse_step
 from .settings import load_settings
 
 settings = load_settings()
@@ -73,6 +73,39 @@ def positions(
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:  # pragma: no cover - defensive guard for upstream failures
         raise HTTPException(status_code=502, detail=f"Ephemeris request failed: {exc}") from exc
+
+
+@app.get("/planets")
+def planets(
+    ids: str = Query(..., description="Comma-separated planet ids"),
+    start: str = Query(..., description="UTC ISO start time"),
+    end: str = Query(..., description="UTC ISO end time"),
+    step: str = Query("1h", description="Cadence, e.g. 10m or 1h"),
+) -> dict[str, list[dict[str, Any]]]:
+    try:
+        planet_ids = parse_planet_ids(ids)
+        step_value, _ = parse_step(step)
+        sun_cache: dict[tuple[str, str, str], tuple[list[str], Any]] = {}
+        payload: dict[str, list[dict[str, Any]]] = {}
+        for planet_id in planet_ids:
+            try:
+                payload[planet_id] = gse_track_for_planet(
+                    planet_id,
+                    start,
+                    end,
+                    step_value,
+                    cache_root=settings.cache_dir,
+                    chunk_days=settings.chunk_days,
+                    sun_cache=sun_cache,
+                )
+            except Exception as exc:  # pragma: no cover - defensive per-target guard
+                logger.warning("Planet query failed for %s: %s", planet_id, exc)
+                payload[planet_id] = []
+        return payload
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # pragma: no cover - defensive guard for upstream failures
+        raise HTTPException(status_code=502, detail=f"Planet ephemeris request failed: {exc}") from exc
 
 
 def _ensure_year_csv(spacecraft, year: int, step: str) -> Path:

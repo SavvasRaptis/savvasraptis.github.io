@@ -2,12 +2,13 @@
 
 const {
   CATALOG: APP_CATALOG,
+  PLANETS: APP_PLANETS,
   fetchPositions,
+  fetchPlanetPositions,
   generateYear,
   AU_KM: APP_AU_KM,
   RE_KM: APP_RE_KM,
   L1_KM: APP_L1_KM,
-  MOON_KM: APP_MOON_KM,
   GROUPS: APP_GROUPS,
   API_BASE: APP_API_BASE,
 } = window.SC_DATA;
@@ -18,14 +19,14 @@ const DEFAULT_SELECTION = new Set([
   'PSP',
 ]);
 
-// Scales + planes. Each gets a short nav label for the subplot quick-nav.
 const SCALES = [
-  { id: 'system',  name: 'Sun–Earth System',                short: 'Sun–Earth',   unit: 'AU', halfWidth: 1.15, center: { x: 0.5 * APP_AU_KM, y: 0, z: 0 } },
-  { id: 'l1',      name: 'L1 Region',                       short: 'L1',          unit: 'Re', halfWidth: 80,   center: { x: APP_L1_KM, y: 0, z: 0 } },
+  { id: 'system',  name: 'Sun–Earth System', short: 'Sun–Earth', unit: 'AU', halfWidth: 1.15, center: { x: 0.5 * APP_AU_KM, y: 0, z: 0 } },
+  { id: 'l1',      name: 'L1 Region',        short: 'L1',        unit: 'Re', halfWidth: 80, center: { x: APP_L1_KM, y: 0, z: 0 } },
 ];
-// Wide magnetosphere panel — big enough to show Moon (~60 Re) so users see relative distance
-const MOON_SCALE = { id: 'moonmag', name: 'Earth Magnetosphere', short: 'Earth Magnetosphere',
-                    unit: 'Re', halfWidth: 80, center: { x: 0, y: 0, z: 0 } };
+const MOON_SCALE = {
+  id: 'moonmag', name: 'Earth Magnetosphere', short: 'Earth Magnetosphere',
+  unit: 'Re', halfWidth: 80, center: { x: 0, y: 0, z: 0 },
+};
 
 const MAX_WINDOW_DAYS = 31;
 const ONE_DAY_MS = 86400_000;
@@ -36,7 +37,9 @@ function toInputDT(iso) {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
 function fromInputDT(s) {
-  return new Date(s + ':00Z').toISOString();
+  const parsed = new Date(`${s}:00Z`);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toISOString();
 }
 function fmtUTC(iso) {
   const d = new Date(iso);
@@ -47,26 +50,37 @@ function fmtUTC(iso) {
 function App() {
   const [startISO, setStartISO] = React.useState('2026-04-01T00:00:00.000Z');
   const [endISO, setEndISO]     = React.useState('2026-04-08T00:00:00.000Z');
-  const [cadence, setCadence]   = React.useState('hourly'); // 'ten_min' | 'hourly'
+  const [cadence, setCadence]   = React.useState('hourly');
+  const [presetMode, setPresetMode] = React.useState('7d');
   const [selectedIds, setSelectedIds] = React.useState(DEFAULT_SELECTION);
   const [expandedGroups, setExpandedGroups] = React.useState(
     new Set(['solar_l1', 'inner_heli', 'magnetospheric', 'deep_space'])
   );
   const [flags, setFlags] = React.useState({
-    showBS: true, showMP: true, showOrbits: true,
-    showLabels: true, showL1L2: true, showMoon: true,
+    showBS: true,
+    showMP: true,
+    showOrbits: false,
+    showLabels: false,
+    showL1L2: true,
+    showMoon: false,
+    showPlanets: false,
   });
-  const [showLegend, setShowLegend] = React.useState(true);
+  const [showLegend, setShowLegend] = React.useState(false);
   const [hoveredId, setHoveredId] = React.useState(null);
   const [selectedScId, setSelectedScId] = React.useState(null);
-  const [sortKey, setSortKey] = React.useState('rSun');
+  const [sortKey, setSortKey] = React.useState('rSun_au');
   const [sortDir, setSortDir] = React.useState('asc');
   const [focusScale, setFocusScale] = React.useState(null);
+  const [show3D, setShow3D] = React.useState(false);
+  const [threeDScaleId, setThreeDScaleId] = React.useState('system');
+  const [autoFitPairs, setAutoFitPairs] = React.useState(false);
   const [query, setQuery] = React.useState('');
   const [downloadUnit, setDownloadUnit] = React.useState('AU');
   const [rangeWarn, setRangeWarn] = React.useState(null);
   const [tracks, setTracks] = React.useState(new Map());
+  const [planetTracks, setPlanetTracks] = React.useState({});
   const [tracksLoading, setTracksLoading] = React.useState(false);
+  const [planetLoading, setPlanetLoading] = React.useState(false);
   const [tracksError, setTracksError] = React.useState(null);
   const [downloadingYear, setDownloadingYear] = React.useState(false);
 
@@ -106,13 +120,67 @@ function App() {
     }
 
     loadTracks();
-
     return () => controller.abort();
   }, [selectedIdsKey, startISO, endISO, step]);
+
+  React.useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadPlanets() {
+      if (!flags.showPlanets) {
+        setPlanetTracks({});
+        setPlanetLoading(false);
+        return;
+      }
+      setPlanetLoading(true);
+      try {
+        const payload = await fetchPlanetPositions(APP_PLANETS.map((p) => p.id), startISO, endISO, step, controller.signal);
+        setPlanetTracks(payload);
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+        setTracksError(error?.message || 'Failed to load planet positions from backend.');
+        setPlanetTracks({});
+      } finally {
+        if (!controller.signal.aborted) setPlanetLoading(false);
+      }
+    }
+
+    loadPlanets();
+    return () => controller.abort();
+  }, [flags.showPlanets, startISO, endISO, step]);
+
+  const getAutoHalfWidth = React.useCallback((baseScale) => {
+    if (!autoFitPairs) return baseScale.halfWidth;
+    let allowedGroup = null;
+    if (baseScale.id === 'l1') allowedGroup = 'solar_l1';
+    if (baseScale.id === 'moonmag') allowedGroup = 'magnetospheric';
+    if (!allowedGroup) return baseScale.halfWidth;
+    const unitKm = baseScale.unit === 'AU' ? APP_AU_KM : APP_RE_KM;
+    let maxAbs = 0;
+    for (const sc of selectedList) {
+      if (sc.group !== allowedGroup) continue;
+      const track = tracks.get(sc.id);
+      if (!track || !track.length) continue;
+      for (const p of track) {
+        const dx = Math.abs((p.x - baseScale.center.x) / unitKm);
+        const dy = Math.abs((p.y - baseScale.center.y) / unitKm);
+        const dz = Math.abs((p.z - baseScale.center.z) / unitKm);
+        maxAbs = Math.max(maxAbs, dx, dy, dz);
+      }
+    }
+    if (maxAbs === 0) return baseScale.halfWidth;
+    const padded = Math.max(baseScale.halfWidth, maxAbs * 1.08);
+    if (baseScale.unit === 'Re') {
+      return Math.ceil(padded * 2) / 2;
+    }
+    return padded;
+  }, [autoFitPairs, selectedList, tracks]);
 
   const ctx = {
     selected: selectedList,
     tracks,
+    planets: APP_PLANETS,
+    planetTracks,
     ...flags,
     hoveredId,
     selectedScId,
@@ -120,7 +188,6 @@ function App() {
     endDate: endISO,
   };
 
-  // Inspector / table rows use the START epoch sample.
   const rows = selectedList.flatMap(sc => {
     const track = tracks.get(sc.id);
     if (!track || track.length === 0) return [];
@@ -128,15 +195,20 @@ function App() {
     const rEarth = Math.sqrt(p.x**2 + p.y**2 + p.z**2);
     const rSun = Math.sqrt((p.x - APP_AU_KM)**2 + p.y**2 + p.z**2);
     return [{
-      id: sc.id, name: sc.name, group: sc.group,
-      x_au: p.x / APP_AU_KM,
-      y_re: p.y / APP_RE_KM,
-      z_re: p.z / APP_RE_KM,
-      rEarth, rSun: rSun / APP_AU_KM,
+      id: sc.id,
+      name: sc.name,
+      group: sc.group,
+      x_km: p.x,
+      y_km: p.y,
+      z_km: p.z,
+      rEarth_km: rEarth,
+      rSun_au: rSun / APP_AU_KM,
     }];
   });
+
   rows.sort((a, b) => {
-    const av = a[sortKey], bv = b[sortKey];
+    const av = a[sortKey];
+    const bv = b[sortKey];
     if (typeof av === 'string') return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
     return sortDir === 'asc' ? av - bv : bv - av;
   });
@@ -164,6 +236,8 @@ function App() {
 
   const onDateChange = (k, v) => {
     const iso = fromInputDT(v);
+    if (!iso) return;
+    setPresetMode('custom');
     if (k === 'start') {
       setStartISO(iso);
       setEndISO(prev => clampEnd(iso, prev));
@@ -181,6 +255,29 @@ function App() {
     const end = new Date(Math.min(next.getTime(), first.getTime() + MAX_WINDOW_DAYS * ONE_DAY_MS));
     setStartISO(first.toISOString());
     setEndISO(end.toISOString());
+    setPresetMode('month');
+    setRangeWarn(null);
+  };
+
+  const shiftWindow = (offset) => {
+    const s = new Date(startISO);
+    const e = new Date(endISO);
+    const durMs = e.getTime() - s.getTime();
+    if (presetMode === '24h' || presetMode === '7d') {
+      setStartISO(new Date(s.getTime() + offset * durMs).toISOString());
+      setEndISO(new Date(e.getTime() + offset * durMs).toISOString());
+      setRangeWarn(null);
+      return;
+    }
+
+    const y = s.getUTCFullYear();
+    const m = s.getUTCMonth() + offset;
+    const first = new Date(Date.UTC(y, m, 1));
+    const next = new Date(Date.UTC(y, m + 1, 1));
+    const monthEnd = new Date(Math.min(next.getTime(), first.getTime() + MAX_WINDOW_DAYS * ONE_DAY_MS));
+    setStartISO(first.toISOString());
+    setEndISO(monthEnd.toISOString());
+    if (presetMode !== 'month') setPresetMode('month');
     setRangeWarn(null);
   };
 
@@ -189,21 +286,34 @@ function App() {
     now.setUTCHours(0,0,0,0);
     const s = now.toISOString();
     const e = new Date(now.getTime() + days * ONE_DAY_MS).toISOString();
-    setStartISO(s); setEndISO(e); setRangeWarn(null);
+    setStartISO(s);
+    setEndISO(e);
+    setPresetMode(days === 1 ? '24h' : '7d');
+    setRangeWarn(null);
   };
 
   const toggleSc = (id) => setSelectedIds(s => {
-    const ns = new Set(s); if (ns.has(id)) ns.delete(id); else ns.add(id); return ns;
+    const ns = new Set(s);
+    if (ns.has(id)) ns.delete(id);
+    else ns.add(id);
+    return ns;
   });
+
   const toggleGroup = (gk, on) => setSelectedIds(s => {
     const ns = new Set(s);
     for (const sc of APP_CATALOG) if (sc.group === gk) { if (on) ns.add(sc.id); else ns.delete(sc.id); }
     return ns;
   });
+
   const toggleExpand = (gk) => setExpandedGroups(s => {
-    const ns = new Set(s); if (ns.has(gk)) ns.delete(gk); else ns.add(gk); return ns;
+    const ns = new Set(s);
+    if (ns.has(gk)) ns.delete(gk);
+    else ns.add(gk);
+    return ns;
   });
+
   const onFlag = (k, v) => setFlags(f => ({ ...f, [k]: v }));
+
   const onSort = (k) => {
     if (k === sortKey) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
     else { setSortKey(k); setSortDir('asc'); }
@@ -215,7 +325,6 @@ function App() {
     }
   }, [selectedIdsKey]);
 
-  // --- CSV download (trajectory only) ---
   const downloadTrajectory = () => {
     const unit = downloadUnit;
     const conv = unit === 'AU' ? APP_AU_KM : unit === 'Re' ? APP_RE_KM : 1;
@@ -244,7 +353,6 @@ function App() {
     download(`spacecraft-trajectory_${uSuf}_${isoForFile(startISO)}_${isoForFile(endISO)}.csv`, lines.join('\n'));
   };
 
-  // --- Year-long CSV (whole calendar year of startISO) ---
   const downloadYear = async () => {
     const ref = new Date(startISO);
     const year = ref.getUTCFullYear();
@@ -254,8 +362,11 @@ function App() {
     try {
       const response = await generateYear(selectedList.map((sc) => sc.id), year, step);
       if (!response.ok) throw new Error(`Year export failed (${response.status})`);
-      const blob = await response.blob();
-      downloadBlob(`spacecraft-trajectory_km_${year}_full-year.csv`, blob);
+      const raw = await response.text();
+      const converted = convertYearCsvUnits(raw, downloadUnit);
+      const suffix = downloadUnit === 'Re' ? 'Re' : downloadUnit;
+      const blob = new Blob([converted], { type: 'text/csv;charset=utf-8' });
+      downloadBlob(`spacecraft-trajectory_${suffix}_${year}_full-year.csv`, blob);
     } catch (error) {
       setTracksError(error?.message || 'Year export failed.');
     } finally {
@@ -301,99 +412,129 @@ function App() {
       </header>
 
       <div className={showInspector ? 'main with-inspector' : 'main'}>
-          <Sidebar
-            startISO={startISO} endISO={endISO}
-            onDateChange={onDateChange}
-            cadence={cadence} setCadence={setCadence}
-            durationDays={durationDays}
-            rangeWarn={rangeWarn}
-            onPresetMonth={setPresetMonth}
-            onPreset={setPreset}
+        <Sidebar
+          startISO={startISO}
+          endISO={endISO}
+          onDateChange={onDateChange}
+          cadence={cadence}
+          setCadence={setCadence}
+          durationDays={durationDays}
+          rangeWarn={rangeWarn}
+          onPresetMonth={setPresetMonth}
+          onShiftWindow={shiftWindow}
+          onPreset={setPreset}
+          activePreset={presetMode}
+          selectedIds={selectedIds}
+          onToggle={toggleSc}
+          onToggleGroup={toggleGroup}
+          expandedGroups={expandedGroups}
+          onToggleExpand={toggleExpand}
+          {...flags}
+          onFlag={onFlag}
+          showLegend={showLegend}
+          setShowLegend={setShowLegend}
+          autoFitPairs={autoFitPairs}
+          setAutoFitPairs={setAutoFitPairs}
+          selectedScId={selectedScId}
+          onFocusSc={setSelectedScId}
+          downloadUnit={downloadUnit}
+          setDownloadUnit={setDownloadUnit}
+          onDownloadTrajectory={downloadTrajectory}
+          onDownloadYear={downloadYear}
+        />
 
-            selectedIds={selectedIds}
-            onToggle={toggleSc}
-            onToggleGroup={toggleGroup}
-            expandedGroups={expandedGroups}
-            onToggleExpand={toggleExpand}
-            {...flags}
-            onFlag={onFlag}
-            showLegend={showLegend} setShowLegend={setShowLegend}
-            selectedScId={selectedScId}
-            onFocusSc={setSelectedScId}
-
-            downloadUnit={downloadUnit}
-            setDownloadUnit={setDownloadUnit}
-            onDownloadTrajectory={downloadTrajectory}
-            onDownloadYear={downloadYear}
-          />
-          <div className="canvas">
-            {(tracksLoading || tracksError || downloadingYear) && (
-              <div className="warn" style={{ margin: '10px 0 8px' }}>
-                {tracksLoading && 'Loading trajectories from backend...'}
-                {downloadingYear && 'Preparing full-year CSV export...'}
-                {tracksError && `Backend error: ${tracksError}`}
-              </div>
-            )}
-            {/* Inspect-picker — choose which SC to open in the right panel */}
-            <div className="inspect-bar">
-              <label className="inspect-label">Inspect spacecraft</label>
-              <select className="inspect-select"
-                value={selectedScId || ''}
-                onChange={e => setSelectedScId(e.target.value || null)}>
-                <option value="">— None (full-width plots) —</option>
-                {selectedList.map(sc => (
-                  <option key={sc.id} value={sc.id}>{sc.name} · {APP_GROUPS[sc.group].label}</option>
-                ))}
-              </select>
-              {selectedSc && (
-                <button className="inspect-clear" onClick={() => setSelectedScId(null)} title="Hide inspector">Hide inspector ×</button>
-              )}
+        <div className="canvas">
+          {(tracksError || downloadingYear) && (
+            <div className="warn" style={{ margin: '10px 0 8px' }}>
+              {downloadingYear && 'Preparing full-year CSV export...'}
+              {tracksError && `Backend error: ${tracksError}`}
             </div>
-
-            {/* Subplot quick-nav — one chip per scale row (XY+XZ pair) */}
-            <div className="quicknav">
-              <span className="qn-label">Jump to</span>
-              {SCALES.map(sc => (
-                <button key={sc.id} className="qn-btn" onClick={() => scrollToPanel(`${sc.id}-row`)}>
-                  <span>{sc.short}</span>
-                </button>
-              ))}
-              <button className="qn-btn" onClick={() => scrollToPanel('moonmag-row')}>
-                <span>Earth Magnetosphere</span>
-              </button>
-            </div>
-
-            {/* One row per scale, two cells (XY + XZ) */}
-            {SCALES.map(sc => (
-              <div key={sc.id} className="plot-row" ref={el => subplotRefs.current[`${sc.id}-row`] = el}>
-                <PlotPanel scale={{ ...sc, plane: 'xy' }} ctx={ctx} showLegend={showLegend}
-                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
-                <PlotPanel scale={{ ...sc, plane: 'xz' }} ctx={ctx} showLegend={showLegend}
-                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
-              </div>
-            ))}
-
-            {/* Earth magnetosphere row — both planes */}
-            <div className="plot-row" ref={el => subplotRefs.current['moonmag-row'] = el}>
-              <PlotPanel scale={{ ...MOON_SCALE, plane: 'xy' }} ctx={ctx} showLegend={showLegend}
-                onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
-              <PlotPanel scale={{ ...MOON_SCALE, plane: 'xz' }} ctx={ctx} showLegend={showLegend}
-                onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
-            </div>
-
-            <PositionsTable
-              rows={rows}
-              sortKey={sortKey} sortDir={sortDir}
-              onSort={onSort}
-              onSelect={setSelectedScId}
-              selectedId={selectedScId}
-            />
-          </div>
-          {showInspector && (
-            <Inspector sc={selectedSc} snapshot={selectedSnapshot}
-              epochLabel={fmtUTC(startISO)}
-              onClose={() => setSelectedScId(null)} />
           )}
+          {(tracksLoading || planetLoading) && (
+            <div className="loading-overlay" role="status" aria-live="polite">
+              <span className="loading-spinner" />
+              <span>{planetLoading ? 'Loading trajectories and planet markers...' : 'Loading trajectories from backend...'}</span>
+            </div>
+          )}
+
+          <div className="inspect-bar">
+            <label className="inspect-label">Inspect spacecraft</label>
+            <select className="inspect-select"
+              value={selectedScId || ''}
+              onChange={e => setSelectedScId(e.target.value || null)}>
+              <option value="">— None (full-width plots) —</option>
+              {selectedList.map(sc => (
+                <option key={sc.id} value={sc.id}>{sc.name} · {APP_GROUPS[sc.group].label}</option>
+              ))}
+            </select>
+            {selectedSc && (
+              <button className="inspect-clear" onClick={() => setSelectedScId(null)} title="Hide inspector">Hide inspector ×</button>
+            )}
+            <button className={'inspect-3d-toggle' + (show3D ? ' on' : '')} onClick={() => setShow3D((v) => !v)} title="Toggle interactive 3D">
+              {show3D ? 'Hide 3D' : 'Show 3D'}
+            </button>
+          </div>
+
+          {show3D && (
+            <ThreeDPanel
+              scales={[...SCALES, MOON_SCALE]}
+              selectedScaleId={threeDScaleId}
+              onScaleChange={setThreeDScaleId}
+              ctx={ctx}
+            />
+          )}
+
+          <div className="quicknav">
+            <span className="qn-label">Jump to</span>
+            {SCALES.map(sc => (
+              <button key={sc.id} className="qn-btn" onClick={() => scrollToPanel(`${sc.id}-row`)}>
+                <span>{sc.short}</span>
+              </button>
+            ))}
+            <button className="qn-btn" onClick={() => scrollToPanel('moonmag-row')}>
+              <span>Earth Magnetosphere</span>
+            </button>
+          </div>
+
+          {SCALES.map(sc => {
+            const tuned = { ...sc, halfWidth: getAutoHalfWidth(sc) };
+            return (
+              <div key={sc.id} className="plot-row" ref={el => subplotRefs.current[`${sc.id}-row`] = el}>
+                <PlotPanel scale={{ ...tuned, plane: 'xy' }} ctx={ctx} showLegend={showLegend}
+                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
+                <PlotPanel scale={{ ...tuned, plane: 'xz' }} ctx={ctx} showLegend={showLegend}
+                  onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
+              </div>
+            );
+          })}
+
+          <div className="plot-row" ref={el => subplotRefs.current['moonmag-row'] = el}>
+            <PlotPanel scale={{ ...MOON_SCALE, halfWidth: getAutoHalfWidth(MOON_SCALE), plane: 'xy' }} ctx={ctx} showLegend={showLegend}
+              onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
+            <PlotPanel scale={{ ...MOON_SCALE, halfWidth: getAutoHalfWidth(MOON_SCALE), plane: 'xz' }} ctx={ctx} showLegend={showLegend}
+              onHover={setHoveredId} onSelect={setSelectedScId} onFocus={(s) => setFocusScale(s)} />
+          </div>
+
+          <PositionsTable
+            rows={rows}
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onSort={onSort}
+            onSelect={setSelectedScId}
+            selectedId={selectedScId}
+          />
+        </div>
+
+        {showInspector && (
+          <Inspector
+            sc={selectedSc}
+            snapshot={selectedSnapshot}
+            rows={rows}
+            onSelectSc={setSelectedScId}
+            epochLabel={fmtUTC(startISO)}
+            onClose={() => setSelectedScId(null)}
+          />
+        )}
       </div>
 
       {focusScale && (
@@ -408,9 +549,154 @@ function App() {
   );
 }
 
+function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
+  const scale = scales.find((s) => s.id === selectedScaleId) || scales[0];
+  const shellRef = React.useRef(null);
+  const hostRef = React.useRef(null);
+  const [isMaximized, setIsMaximized] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!hostRef.current) return;
+    if (!window.SC_PLOT?.build3DPlot) {
+      hostRef.current.innerHTML = '<div style="padding:12px;font:12px ui-monospace,Menlo,monospace;color:#8b0000">3D renderer not available.</div>';
+      return;
+    }
+    hostRef.current.innerHTML = '<div style="padding:12px;font:12px ui-monospace,Menlo,monospace;color:#374151">Rendering 3D view...</div>';
+    const teardown = window.SC_PLOT.build3DPlot(hostRef.current, scale, ctx);
+    return () => {
+      if (typeof teardown === 'function') teardown();
+    };
+  }, [selectedScaleId, ctx.selected, ctx.tracks, ctx.planetTracks, ctx.showPlanets, ctx.showBS, ctx.showMP, ctx.showLabels, ctx.showL1L2, ctx.selectedScId]);
+
+  React.useEffect(() => {
+    const onFs = () => setIsMaximized(document.fullscreenElement === shellRef.current);
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+
+  const savePng = () => {
+    if (!hostRef.current) return;
+    const canvas = hostRef.current.querySelector('canvas');
+    if (!canvas) return;
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = `spacecraft-3d-${scale.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
+  };
+
+  const saveSvg = () => {
+    if (!hostRef.current) return;
+    const canvas = hostRef.current.querySelector('canvas');
+    if (!canvas) return;
+    const png = canvas.toDataURL('image/png');
+    const w = canvas.width;
+    const h = canvas.height;
+    const svg = [
+      `<?xml version="1.0" encoding="UTF-8"?>`,
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">`,
+      `<image href="${png}" width="${w}" height="${h}" />`,
+      `</svg>`,
+    ].join('');
+    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    downloadBlob(`spacecraft-3d-${scale.id}.svg`, blob);
+  };
+
+  const toggleMaximize = async () => {
+    const node = shellRef.current;
+    if (!node) return;
+    if (document.fullscreenElement === node) {
+      await document.exitFullscreen();
+      return;
+    }
+    if (node.requestFullscreen) await node.requestFullscreen();
+  };
+
+  return (
+    <section
+      ref={shellRef}
+      className="three3d-shell"
+      style={{
+        display: 'block',
+        background: 'var(--paper)',
+        border: '1px solid var(--rule)',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        minHeight: '612px',
+      }}
+    >
+      <div
+        className="three3d-head"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '12px',
+          padding: '10px 12px',
+          borderBottom: '1px solid var(--rule)',
+        }}
+      >
+        <div className="three3d-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 600 }}>
+          <span className="plane-chip">3D</span>
+          <span>Interactive XYZ View</span>
+        </div>
+        <div className="three3d-actions" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+          <select className="panel-select" value={selectedScaleId} onChange={(e) => onScaleChange(e.target.value)}>
+            {scales.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+          <button onClick={toggleMaximize} title="Maximize 3D">{isMaximized ? '⤡' : '⤢'}</button>
+          <button onClick={saveSvg} title="Export 3D SVG">SVG</button>
+          <button onClick={savePng} title="Export 3D PNG">PNG</button>
+        </div>
+      </div>
+      <div
+        ref={hostRef}
+        className="three3d-host"
+        style={{
+          display: 'block',
+          minHeight: '560px',
+          height: '560px',
+          background: '#fff',
+          overflow: 'auto',
+          padding: '0',
+        }}
+      />
+    </section>
+  );
+}
+
 function isoForFile(iso) {
   return iso.slice(0, 16).replace(/[:]/g, '').replace('T', '_');
 }
+
+function convertYearCsvUnits(csvText, unit) {
+  if (!csvText || unit === 'km') return csvText;
+  const conv = unit === 'AU' ? APP_AU_KM : APP_RE_KM;
+  const suffix = unit === 'Re' ? 'Re' : unit;
+  const lines = csvText.split(/\r?\n/);
+  if (!lines.length) return csvText;
+  const out = [];
+  out.push(`epoch_utc,x_${suffix},y_${suffix},z_${suffix},id`);
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line || !line.trim()) continue;
+    const parts = line.split(',');
+    if (parts.length < 5) continue;
+    const x = Number(parts[1]);
+    const y = Number(parts[2]);
+    const z = Number(parts[3]);
+    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) continue;
+    out.push(`${parts[0]},${(x / conv).toExponential(6)},${(y / conv).toExponential(6)},${(z / conv).toExponential(6)},${parts[4]}`);
+  }
+  return out.join('\n') + '\n';
+}
+
 function download(filename, content) {
   const blob = new Blob([content], { type: 'text/csv;charset=utf-8' });
   downloadBlob(filename, blob);
@@ -419,25 +705,30 @@ function download(filename, content) {
 function downloadBlob(filename, blob) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); a.remove();
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// ---------- Inline spacecraft quick-picker ----------
 function ScPicker({ selectedScId, onSelect, query, setQuery }) {
   const [open, setOpen] = React.useState(false);
   const wrapRef = React.useRef(null);
   const sc = APP_CATALOG.find(s => s.id === selectedScId);
+
   React.useEffect(() => {
     const close = (e) => { if (!wrapRef.current?.contains(e.target)) setOpen(false); };
     window.addEventListener('mousedown', close);
     return () => window.removeEventListener('mousedown', close);
   }, []);
+
   const q = query.trim().toLowerCase();
   const filtered = APP_CATALOG.filter(s =>
     !q || s.name.toLowerCase().includes(q) || s.id.toLowerCase().includes(q) || APP_GROUPS[s.group].label.toLowerCase().includes(q)
   );
+
   return (
     <div className="scpicker" ref={wrapRef}>
       <button className="scpicker-btn" onClick={() => setOpen(o => !o)} title="Focus a spacecraft">
@@ -479,7 +770,10 @@ function FocusPanel({ scale, ctx, showLegend }) {
   React.useEffect(() => {
     try {
       const svg = window.SC_PLOT.buildPlot(scale, ctx, {
-        width: showLegend ? 1200 : 1000, height: 900, fontScale: 1.15, showLegend
+        width: showLegend ? 1200 : 1000,
+        height: 900,
+        fontScale: 1.15,
+        showLegend,
       });
       hostRef.current.innerHTML = '';
       hostRef.current.appendChild(svg);
@@ -506,7 +800,6 @@ class AppErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    // Keep a console trace for debugging while showing a user-visible fallback.
     console.error('SC Viewer runtime error', error, info);
   }
 
