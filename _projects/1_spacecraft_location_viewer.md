@@ -1,15 +1,15 @@
 ---
 layout: page
 title: Spacecraft Location Viewer
-description: Interactive GSE dashboard for heliophysics and magnetospheric spacecraft trajectories powered by live ephemeris APIs.
+description: Interactive dashboard for heliophysics and magnetospheric spacecraft trajectories.
 importance: 1
 permalink: /projects/spacecraft-location-viewer/
 ---
 
 This dashboard shows multi-scale spacecraft trajectories in **GSE** coordinates with live backend data.
 
-- Source frame: GSE (`x` sunward, `z` ecliptic north, `y = z × x`)
-- Units: `km` in API responses
+- Coordinate frame: Geocentric Solar Ecliptic System (GSE) 
+- Units: `km` in API responses, adaptable to `Re` and `AU`
 - Providers: JPL Horizons + SSCWeb (for THEMIS/Cluster/Geotail)
 
 <p class="viewer-launch-wrap">

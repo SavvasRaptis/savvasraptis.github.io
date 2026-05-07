@@ -2,6 +2,18 @@
 
 const { GROUPS: SB_GROUPS, CATALOG: SB_CATALOG } = window.SC_DATA;
 
+function normalizeDateTimeLocalInput(raw) {
+  if (!raw) return raw;
+  let value = String(raw);
+  const head = value.match(/^(\d+)(.*)$/);
+  if (head && head[1].length > 4) {
+    value = head[1].slice(0, 4) + head[2];
+  }
+  // datetime-local (minute precision) should remain YYYY-MM-DDTHH:MM (16 chars)
+  if (value.length > 16) value = value.slice(0, 16);
+  return value;
+}
+
 function Sidebar({
   startISO, endISO, onDateChange,
   cadence, setCadence,
@@ -47,7 +59,7 @@ function Sidebar({
               type="datetime-local"
               step="600"
               value={draftStart}
-              onChange={(e) => setDraftStart(e.target.value)}
+              onChange={(e) => setDraftStart(normalizeDateTimeLocalInput(e.target.value))}
               onBlur={commitStart}
               onKeyDown={(e) => { if (e.key === 'Enter') commitStart(); }}
             />
@@ -60,7 +72,7 @@ function Sidebar({
               type="datetime-local"
               step="600"
               value={draftEnd}
-              onChange={(e) => setDraftEnd(e.target.value)}
+              onChange={(e) => setDraftEnd(normalizeDateTimeLocalInput(e.target.value))}
               onBlur={commitEnd}
               onKeyDown={(e) => { if (e.key === 'Enter') commitEnd(); }}
             />

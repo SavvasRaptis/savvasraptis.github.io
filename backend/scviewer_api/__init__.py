@@ -1,2 +1,0 @@
-"""SC Viewer backend package."""
-

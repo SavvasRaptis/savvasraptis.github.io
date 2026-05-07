@@ -23,9 +23,18 @@
       // 3) localhost fallback for local runs
       // 4) production default (set this to your Render hostname)
       const _apiFromQuery = new URLSearchParams(window.location.search).get('api');
+      // Static data base precedence:
+      // 1) existing window.SC_DATA_BASE (manual override)
+      // 2) ?data=https://... query parameter
+      // 3) localhost fallback disabled (empty => API fallback)
+      // 4) production default (set this to your jsDelivr data repo URL)
+      const _dataFromQuery = new URLSearchParams(window.location.search).get('data');
       const _isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-      const _prodDefaultApi = 'https://savvasraptis-github-io.onrender.com';
+      const _prodDefaultApi = 'https://scviewer-api.onrender.com';
+      const _prodDefaultData = 'https://cdn.jsdelivr.net/gh/SavvasRaptis/scviewer-data@main';
       window.SC_API_BASE = window.SC_API_BASE || _apiFromQuery || (_isLocalHost ? 'http://localhost:8000' : _prodDefaultApi);
+      window.SC_DATA_BASE = window.SC_DATA_BASE || _dataFromQuery || (_isLocalHost ? '' : _prodDefaultData);
+      window.SC_DATA_MANIFEST_PATH = window.SC_DATA_MANIFEST_PATH || '/scdata/manifest.json';
       window.__SC_BOOT_ACTIVE = true;
       function renderBootError(message) {
         const root = document.getElementById('root');

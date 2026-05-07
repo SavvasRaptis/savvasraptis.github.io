@@ -14,5 +14,6 @@ vendor
 .venv/
 backend/.venv/
 backend/data/cache/
+backend/data/static/
 __pycache__/
 *.pyc

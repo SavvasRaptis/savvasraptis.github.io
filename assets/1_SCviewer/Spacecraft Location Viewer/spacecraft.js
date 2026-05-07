@@ -1,4 +1,4 @@
-// Spacecraft catalog + API data layer for real GSE positions.
+// Spacecraft catalog + API/static data layer for real GSE positions.
 // Backend contract:
 //   GET /positions?ids=DSCOVR,ACE&start=...&end=...&step=1h
 //   GET /positions/year?ids=DSCOVR&year=2025&step=1h
@@ -10,9 +10,15 @@ const L1_KM = 1_500_000;
 const L2_KM = -1_500_000;
 const MOON_KM = 384_400;
 
-// Set this from HTML before loading this file:
-//   <script>window.SC_API_BASE = "https://your-backend.example.com";</script>
+// Set these from HTML before loading this file:
+//   <script>
+//     window.SC_API_BASE = "https://your-backend.example.com";
+//     window.SC_DATA_BASE = "https://cdn.jsdelivr.net/gh/<user>/scviewer-data@main";
+//   </script>
 const API_BASE = (window.SC_API_BASE || 'http://localhost:8000').replace(/\/+$/, '');
+const DATA_BASE = (window.SC_DATA_BASE || '').replace(/\/+$/, '');
+const DATA_MANIFEST_PATH = window.SC_DATA_MANIFEST_PATH || '/scdata/manifest.json';
+const STATIC_PATH_TEMPLATE = '/scdata/{step}/{id}/{yyyy}/{mm}.json.gz';
 
 const GROUPS = {
   magnetospheric: { label: 'Magnetospheric', hue: 25, short: 'MAG' },
@@ -71,12 +77,20 @@ const CATALOG = [
   { id: 'VOYAGER2', name: 'Voyager-2', group: 'deep_space' },
 ];
 
-function buildUrl(path, params) {
+let _manifestPromise = null;
+
+function buildApiUrl(path, params) {
   const url = new URL(`${API_BASE}${path}`);
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
   });
   return url.toString();
+}
+
+function buildDataUrl(path) {
+  if (!DATA_BASE) return null;
+  const clean = path.startsWith('/') ? path : `/${path}`;
+  return `${DATA_BASE}${clean}`;
 }
 
 function normalizePoint(p) {
@@ -88,9 +102,160 @@ function normalizePoint(p) {
   };
 }
 
-async function fetchPositions(ids, startISO, endISO, step = '1h', signal) {
+function monthKey(date) {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+function monthKeysInRange(startISO, endISO) {
+  const start = new Date(startISO);
+  const end = new Date(endISO);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end <= start) return [];
+
+  const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
+  const last = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), 1));
+  const out = [];
+
+  while (cursor <= last) {
+    out.push(monthKey(cursor));
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+  }
+  return out;
+}
+
+function monthParts(key) {
+  const [yyyy, mm] = key.split('-');
+  return { yyyy, mm };
+}
+
+function chunkPath(step, id, ym, template) {
+  const { yyyy, mm } = monthParts(ym);
+  return template
+    .replaceAll('{step}', step)
+    .replaceAll('{id}', id)
+    .replaceAll('{yyyy}', yyyy)
+    .replaceAll('{mm}', mm);
+}
+
+function normalizeRows(rawRows) {
+  if (!Array.isArray(rawRows)) return [];
+  return rawRows.map(normalizePoint).filter((row) => row.t && Number.isFinite(row.x) && Number.isFinite(row.y) && Number.isFinite(row.z));
+}
+
+function rowsForIdFromChunk(payload, id) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== 'object') return [];
+  if (Array.isArray(payload[id])) return payload[id];
+  if (Array.isArray(payload.rows)) return payload.rows;
+  if (payload.data && Array.isArray(payload.data[id])) return payload.data[id];
+  return [];
+}
+
+function mergeByEpoch(seriesA, seriesB) {
+  const byEpoch = new Map();
+  for (const row of seriesA || []) byEpoch.set(row.t, row);
+  for (const row of seriesB || []) byEpoch.set(row.t, row);
+  return Array.from(byEpoch.values()).sort((a, b) => a.t.localeCompare(b.t));
+}
+
+function extractMonths(entry) {
+  if (!entry) return null;
+  if (Array.isArray(entry)) return entry;
+  if (entry && Array.isArray(entry.months)) return entry.months;
+  return null;
+}
+
+function availableMonthsFromManifest(manifest, step, id) {
+  const v1 = extractMonths(manifest?.steps?.[step]?.[id]);
+  if (v1) return new Set(v1);
+
+  const v2 = extractMonths(manifest?.missions?.[id]?.steps?.[step]);
+  if (v2) return new Set(v2);
+
+  const v3 = extractMonths(manifest?.availability?.[step]?.[id]);
+  if (v3) return new Set(v3);
+
+  return null;
+}
+
+async function parseMaybeGzipJson(response, url) {
+  if (!url.endsWith('.gz')) return response.json();
+  const buf = await response.arrayBuffer();
+  if (typeof DecompressionStream === 'undefined') {
+    throw new Error('Gzip chunk encountered but DecompressionStream is unavailable in this browser.');
+  }
+  const ds = new DecompressionStream('gzip');
+  const decompressed = new Blob([buf]).stream().pipeThrough(ds);
+  const text = await new Response(decompressed).text();
+  return JSON.parse(text);
+}
+
+async function fetchManifest(signal) {
+  if (!DATA_BASE) return null;
+  if (_manifestPromise) return _manifestPromise;
+
+  const url = buildDataUrl(DATA_MANIFEST_PATH);
+  _manifestPromise = (async () => {
+    const response = await fetch(url, { signal });
+    if (!response.ok) {
+      throw new Error(`Static manifest fetch failed (${response.status}).`);
+    }
+    return response.json();
+  })();
+
+  try {
+    return await _manifestPromise;
+  } catch (error) {
+    _manifestPromise = null;
+    throw error;
+  }
+}
+
+async function loadStaticPositions(ids, startISO, endISO, step, signal) {
+  if (!DATA_BASE) return { payload: {}, completeIds: new Set(), usedStatic: false };
+
+  const manifest = await fetchManifest(signal);
+  if (!manifest) return { payload: {}, completeIds: new Set(), usedStatic: false };
+
+  const template = manifest.path_template || STATIC_PATH_TEMPLATE;
+  const months = monthKeysInRange(startISO, endISO);
+  const payload = {};
+  const completeIds = new Set();
+
+  await Promise.all(
+    ids.map(async (id) => {
+      const available = availableMonthsFromManifest(manifest, step, id);
+      if (!available) {
+        payload[id] = [];
+        return;
+      }
+
+      const required = months.filter((ym) => available.has(ym));
+      const missing = months.filter((ym) => !available.has(ym));
+      const chunks = await Promise.all(
+        required.map(async (ym) => {
+          const path = chunkPath(step, id, ym, template);
+          const url = buildDataUrl(path);
+          const response = await fetch(url, { signal });
+          if (!response.ok) throw new Error(`Static chunk fetch failed for ${id} ${ym}: ${response.status}`);
+          const decoded = await parseMaybeGzipJson(response, url);
+          return normalizeRows(rowsForIdFromChunk(decoded, id));
+        })
+      );
+
+      const merged = chunks.reduce((acc, rows) => mergeByEpoch(acc, rows), []);
+      payload[id] = merged;
+      if (missing.length === 0) completeIds.add(id);
+    })
+  );
+
+  return { payload, completeIds, usedStatic: true };
+}
+
+async function fetchApiPositions(ids, startISO, endISO, step = '1h', signal) {
   const idsValue = Array.isArray(ids) ? ids.join(',') : ids;
-  const url = buildUrl('/positions', {
+  const url = buildApiUrl('/positions', {
     ids: idsValue,
     start: startISO,
     end: endISO,
@@ -109,11 +274,38 @@ async function fetchPositions(ids, startISO, endISO, step = '1h', signal) {
   return normalized;
 }
 
+async function fetchPositions(ids, startISO, endISO, step = '1h', signal) {
+  const idList = Array.isArray(ids) ? ids : String(ids).split(',').map((s) => s.trim()).filter(Boolean);
+  const uniqueIds = Array.from(new Set(idList));
+
+  let staticResult = { payload: {}, completeIds: new Set(), usedStatic: false };
+  try {
+    staticResult = await loadStaticPositions(uniqueIds, startISO, endISO, step, signal);
+  } catch (error) {
+    console.warn('[SC Viewer] Static data load failed; falling back to API.', error);
+  }
+
+  const missingIds = uniqueIds.filter((id) => !staticResult.completeIds.has(id));
+  let apiPayload = {};
+  if (missingIds.length) {
+    apiPayload = await fetchApiPositions(missingIds, startISO, endISO, step, signal);
+  }
+
+  const merged = {};
+  for (const id of uniqueIds) {
+    const fromStatic = staticResult.payload[id] || [];
+    const fromApi = apiPayload[id] || [];
+    merged[id] = mergeByEpoch(fromStatic, fromApi);
+  }
+
+  return merged;
+}
+
 async function fetchPlanetPositions(ids, startISO, endISO, step = '1h', signal) {
   const idsList = Array.isArray(ids) ? ids : String(ids).split(',').map((s) => s.trim()).filter(Boolean);
   const cleanIds = idsList.map((id) => String(id).toUpperCase()).filter((id) => PLANET_IDS.includes(id));
   if (!cleanIds.length) return {};
-  const url = buildUrl('/planets', {
+  const url = buildApiUrl('/planets', {
     ids: cleanIds.join(','),
     start: startISO,
     end: endISO,
@@ -139,12 +331,12 @@ async function generatePositions(sc, startISO, endISO, step = '1h', signal) {
 
 async function generateYear(ids, year, step = '1h', signal) {
   const idsValue = Array.isArray(ids) ? ids.join(',') : ids;
-  const url = buildUrl('/positions/year', { ids: idsValue, year, step });
+  const url = buildApiUrl('/positions/year', { ids: idsValue, year, step });
   return fetch(url, { signal });
 }
 
 async function fetchCatalog(signal) {
-  const url = buildUrl('/catalog', {});
+  const url = buildApiUrl('/catalog', {});
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`Catalog fetch failed (${response.status})`);
   return response.json();
@@ -166,6 +358,8 @@ async function fetchCatalog(signal) {
 
 window.SC_DATA = {
   API_BASE,
+  DATA_BASE,
+  DATA_MANIFEST_PATH,
   AU_KM,
   RE_KM,
   L1_KM,
