@@ -190,10 +190,12 @@ function App() {
   }, []);
 
   const getEffectiveHalfWidth = React.useCallback((baseScale) => {
+    // Auto-fit has priority while enabled; manual ranges apply only when auto-fit is off.
+    if (autoFitPairs) return getAutoHalfWidth(baseScale);
     const manual = manualHalfWidths[baseScale.id];
     if (Number.isFinite(manual)) return manual;
     return getAutoHalfWidth(baseScale);
-  }, [manualHalfWidths, getAutoHalfWidth]);
+  }, [autoFitPairs, manualHalfWidths, getAutoHalfWidth]);
 
   const setManualHalfWidth = React.useCallback((scaleId, nextValue) => {
     const cfg = getRangeConfig(scaleId);
