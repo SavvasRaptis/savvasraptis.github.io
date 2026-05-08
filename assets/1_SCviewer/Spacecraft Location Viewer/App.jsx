@@ -48,8 +48,8 @@ function fmtUTC(iso) {
 }
 
 function App() {
-  const [startISO, setStartISO] = React.useState('2026-04-01T00:00:00.000Z');
-  const [endISO, setEndISO]     = React.useState('2026-04-08T00:00:00.000Z');
+  const [startISO, setStartISO] = React.useState('2025-12-01T00:00:00.000Z');
+  const [endISO, setEndISO]     = React.useState('2025-12-08T00:00:00.000Z');
   const [cadence, setCadence]   = React.useState('hourly');
   const [presetMode, setPresetMode] = React.useState('7d');
   const [selectedIds, setSelectedIds] = React.useState(DEFAULT_SELECTION);
