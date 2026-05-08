@@ -380,12 +380,35 @@ function buildPlot(scale, ctx, opts = {}) {
     for (const planet of ctx.planets) {
       const track = ctx.planetTracks?.[planet.id];
       if (!Array.isArray(track) || track.length === 0) continue;
+      const color = planet.color || '#888';
+      if (track.length > 1) {
+        for (let i = 1; i < track.length; i++) {
+          const [ax, ay] = worldToScreen(track[i - 1]);
+          const [bx, by] = worldToScreen(track[i]);
+          if (!isFinite(ax) || !isFinite(ay) || !isFinite(bx) || !isFinite(by)) continue;
+          content.appendChild(el('line', {
+            x1: ax,
+            y1: ay,
+            x2: bx,
+            y2: by,
+            stroke: color,
+            'stroke-width': 1.2 * fs,
+            'stroke-opacity': 0.5,
+            'stroke-linecap': 'round',
+          }));
+        }
+      }
       const last = track[track.length - 1];
       const [px, py] = worldToScreen(last);
       const visible = px > PAD_L - 20 && px < PAD_L + plotW + 20 && py > PAD_T - 20 && py < PAD_T + plotH + 20;
       if (!visible) continue;
-      const color = planet.color || '#888';
-      content.appendChild(el('circle', { cx: px, cy: py, r: 6.5 * fs, fill: color, stroke: '#fff', 'stroke-width': 1.5 }));
+      const glyph = drawSymbol('diamond', px, py, 7.2 * fs, {
+        fill: '#ffffff',
+        stroke: color,
+        strokeWidth: 2.2,
+      });
+      content.appendChild(glyph);
+      content.appendChild(el('circle', { cx: px, cy: py, r: 2.5 * fs, fill: color, stroke: '#fff', 'stroke-width': 1.0 }));
       content.appendChild(el('text', {
         x: px + 9 * fs,
         y: py - 7 * fs,
@@ -608,14 +631,36 @@ function build3DTraces(scale, ctx) {
       const track = ctx.planetTracks?.[planet.id];
       if (!Array.isArray(track) || track.length === 0) continue;
       const p = track[track.length - 1];
+      const xs = track.map((pt) => (pt.x - scale.center.x) / unitKm);
+      const ys = track.map((pt) => (pt.y - scale.center.y) / unitKm);
+      const zs = track.map((pt) => (pt.z - scale.center.z) / unitKm);
+      if (track.length > 1) {
+        traces.push({
+          type: 'scatter3d',
+          mode: 'lines',
+          name: `${planet.name} trail`,
+          showlegend: false,
+          hoverinfo: 'skip',
+          x: xs,
+          y: ys,
+          z: zs,
+          line: { color: planet.color || '#777', width: 2 },
+          opacity: 0.55,
+        });
+      }
       traces.push({
         type: 'scatter3d',
         mode: 'markers+text',
         name: planet.name,
-        x: [(p.x - scale.center.x) / unitKm],
-        y: [(p.y - scale.center.y) / unitKm],
-        z: [(p.z - scale.center.z) / unitKm],
-        marker: { size: 6, color: planet.color || '#777' },
+        x: [xs[xs.length - 1]],
+        y: [ys[ys.length - 1]],
+        z: [zs[zs.length - 1]],
+        marker: {
+          size: 7,
+          color: planet.color || '#777',
+          symbol: 'diamond',
+          line: { color: '#ffffff', width: 1.2 },
+        },
         text: [planet.name],
         textposition: 'top center',
       });
