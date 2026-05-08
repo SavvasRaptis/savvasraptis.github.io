@@ -183,7 +183,7 @@ function App() {
   }, [autoFitPairs, selectedList, tracks]);
 
   const getRangeConfig = React.useCallback((scaleId) => {
-    if (scaleId === 'system') return { min: 1, max: 2, step: 0.05, unit: 'AU' };
+    if (scaleId === 'system') return { min: 1, max: 5, step: 0.05, unit: 'AU' };
     if (scaleId === 'l1') return { min: 50, max: 150, step: 0.5, unit: 'Re' };
     if (scaleId === 'moonmag') return { min: 10, max: 100, step: 0.5, unit: 'Re' };
     return { min: 1, max: 200, step: 1, unit: '' };

@@ -159,6 +159,17 @@ function mergeByEpoch(seriesA, seriesB) {
   return Array.from(byEpoch.values()).sort((a, b) => a.t.localeCompare(b.t));
 }
 
+function clipRowsToWindow(rows, startISO, endISO) {
+  if (!Array.isArray(rows) || !rows.length) return [];
+  const startMs = Date.parse(startISO);
+  const endMs = Date.parse(endISO);
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return [];
+  return rows.filter((row) => {
+    const tMs = Date.parse(row.t);
+    return Number.isFinite(tMs) && tMs >= startMs && tMs <= endMs;
+  });
+}
+
 function extractMonths(entry) {
   if (!entry) return null;
   if (Array.isArray(entry)) return entry;
@@ -295,7 +306,8 @@ async function fetchPositions(ids, startISO, endISO, step = '1h', signal) {
   for (const id of uniqueIds) {
     const fromStatic = staticResult.payload[id] || [];
     const fromApi = apiPayload[id] || [];
-    merged[id] = mergeByEpoch(fromStatic, fromApi);
+    const combined = mergeByEpoch(fromStatic, fromApi);
+    merged[id] = clipRowsToWindow(combined, startISO, endISO);
   }
 
   return merged;

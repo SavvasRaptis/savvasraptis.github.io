@@ -14,6 +14,13 @@ function PlotPanel({
   hasManualHalfWidth,
 }) {
   const hostRef = React.useRef(null);
+  function scTargetFromEventTarget(target) {
+    if (!target || typeof target.closest !== 'function') return null;
+    const match = target.closest('.sc-dot');
+    if (!match) return null;
+    const scId = match.getAttribute('data-sc');
+    return scId || null;
+  }
   React.useEffect(() => {
     try {
       const dims = wide
@@ -23,18 +30,11 @@ function PlotPanel({
       svg.classList.add('plot-svg');
       // attach event listeners to dots
       svg.addEventListener('mousemove', (e) => {
-        const t = e.target;
-        if (t && t.classList && t.classList.contains('sc-dot')) {
-          onHover(t.getAttribute('data-sc'));
-        } else {
-          onHover(null);
-        }
+        onHover(scTargetFromEventTarget(e.target));
       });
       svg.addEventListener('click', (e) => {
-        const t = e.target;
-        if (t && t.classList && t.classList.contains('sc-dot')) {
-          onSelect(t.getAttribute('data-sc'));
-        }
+        const scId = scTargetFromEventTarget(e.target);
+        if (scId) onSelect(scId);
       });
       hostRef.current.innerHTML = '';
       hostRef.current.appendChild(svg);
