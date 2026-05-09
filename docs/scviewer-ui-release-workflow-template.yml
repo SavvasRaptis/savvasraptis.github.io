@@ -41,7 +41,7 @@ jobs:
           # npm run build
           #
           # Expected output for packaging below:
-          # dist/Heliospheric Locator.html
+          # dist/heliospheric-locator.html
           # dist/App.jsx
           # dist/Sidebar.jsx
           # dist/Inspector.jsx
@@ -51,7 +51,7 @@ jobs:
           # dist/models.js
           # dist/styles.css
           test -d dist
-          test -f "dist/Heliospheric Locator.html"
+          test -f "dist/heliospheric-locator.html"
 
       - name: Create release zip
         shell: bash
@@ -70,15 +70,18 @@ jobs:
           gh release upload "$TAG" scviewer-ui-dist.zip --clobber
 
       - name: Notify website repo (optional auto-sync)
-        if: ${{ secrets.WEBSITE_REPO_DISPATCH_PAT != '' }}
         env:
           GH_TOKEN: ${{ secrets.WEBSITE_REPO_DISPATCH_PAT }}
         shell: bash
         run: |
           set -euo pipefail
+          if [[ -z "${GH_TOKEN:-}" ]]; then
+            echo "WEBSITE_REPO_DISPATCH_PAT is not set; skipping website dispatch."
+            exit 0
+          fi
           gh api repos/SavvasRaptis/savvasraptis.github.io/dispatches \
             -f event_type='scviewer_ui_release' \
             -f client_payload[ui_repo]="${{ github.repository }}" \
             -f client_payload[release_tag]="${{ steps.tag.outputs.tag }}" \
             -f client_payload[asset_name]='scviewer-ui-dist.zip' \
-            -f client_payload[target_dir]='assets/1_SCviewer/Spacecraft Location Viewer'
+            -f client_payload[target_dir]='scviewer-ui'
