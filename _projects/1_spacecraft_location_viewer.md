@@ -6,11 +6,13 @@ importance: 1
 permalink: /projects/spacecraft-location-viewer/
 ---
 
-This dashboard shows multi-scale spacecraft trajectories in **GSE** coordinates with live backend data.
+This dashboard shows spacecraft trajectories and positions for heliospheric missions.
 
-- Coordinate frame: Geocentric Solar Ecliptic System (GSE) 
-- Units: `km` in API responses, adaptable to `Re` and `AU`
-- Providers: JPL Horizons + SSCWeb (for THEMIS/Cluster/Geotail)
+- Providers: JPL Horizons + SSCWeb (THEMIS/Cluster/Geotail + GOES/Arase/RBSP)
+- Technical repositories:
+  - [UI](https://github.com/SavvasRaptis/scviewer-ui)
+  - [Backend](https://github.com/SavvasRaptis/scviewer-backend)
+  - [Data](https://github.com/SavvasRaptis/scviewer-data)
 
 <p class="viewer-launch-wrap">
   <a
