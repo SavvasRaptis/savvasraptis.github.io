@@ -22,6 +22,7 @@ const STATIC_PATH_TEMPLATE = '/scdata/{step}/{id}/{yyyy}/{mm}.json.gz';
 
 const GROUPS = {
   magnetospheric: { label: 'Magnetospheric', hue: 25, short: 'MAG' },
+  inner_magnetosphere: { label: 'Inner Magnetosphere', hue: 5, short: 'iMAG' },
   solar_l1: { label: 'L1', hue: 255, short: 'L1' },
   inner_heli: { label: 'Inner Heliosphere', hue: 145, short: 'HELI' },
   deep_space: { label: 'Planetary', hue: 300, short: 'PLAN' },
@@ -55,6 +56,17 @@ const CATALOG = [
   { id: 'CL3', name: 'Cluster-3', group: 'magnetospheric' },
   { id: 'CL4', name: 'Cluster-4', group: 'magnetospheric' },
   { id: 'GEOTAIL', name: 'Geotail', group: 'magnetospheric' },
+  { id: 'GOES12', name: 'GOES-12', group: 'inner_magnetosphere' },
+  { id: 'GOES13', name: 'GOES-13', group: 'inner_magnetosphere' },
+  { id: 'GOES14', name: 'GOES-14', group: 'inner_magnetosphere' },
+  { id: 'GOES15', name: 'GOES-15', group: 'inner_magnetosphere' },
+  { id: 'GOES16', name: 'GOES-16', group: 'inner_magnetosphere' },
+  { id: 'GOES17', name: 'GOES-17', group: 'inner_magnetosphere' },
+  { id: 'GOES18', name: 'GOES-18', group: 'inner_magnetosphere' },
+  { id: 'GOES19', name: 'GOES-19', group: 'inner_magnetosphere' },
+  { id: 'ARASE', name: 'Arase (ERG)', group: 'inner_magnetosphere' },
+  { id: 'RBSPA', name: 'Van Allen Probe A', group: 'inner_magnetosphere' },
+  { id: 'RBSPB', name: 'Van Allen Probe B', group: 'inner_magnetosphere' },
 
   { id: 'WIND', name: 'Wind', group: 'solar_l1' },
   { id: 'ACE', name: 'ACE', group: 'solar_l1' },

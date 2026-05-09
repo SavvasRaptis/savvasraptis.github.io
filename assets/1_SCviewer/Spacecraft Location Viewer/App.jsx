@@ -54,7 +54,7 @@ function App() {
   const [presetMode, setPresetMode] = React.useState('7d');
   const [selectedIds, setSelectedIds] = React.useState(DEFAULT_SELECTION);
   const [expandedGroups, setExpandedGroups] = React.useState(
-    new Set(['solar_l1', 'inner_heli', 'magnetospheric', 'deep_space'])
+    new Set(['solar_l1', 'inner_heli', 'magnetospheric', 'inner_magnetosphere', 'deep_space'])
   );
   const [flags, setFlags] = React.useState({
     showBS: true,
@@ -158,7 +158,7 @@ function App() {
         : baseScale.id === 'l1'
           ? new Set(['solar_l1'])
           : baseScale.id === 'moonmag'
-            ? new Set(['magnetospheric'])
+            ? new Set(['magnetospheric', 'inner_magnetosphere'])
             : null;
     if (!allowedGroups) return baseScale.halfWidth;
     const unitKm = baseScale.unit === 'AU' ? APP_AU_KM : APP_RE_KM;
@@ -617,6 +617,8 @@ function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
   const shellRef = React.useRef(null);
   const hostRef = React.useRef(null);
   const [isMaximized, setIsMaximized] = React.useState(false);
+  const [copyState, setCopyState] = React.useState('');
+  const copyStateTimerRef = React.useRef(null);
 
   React.useEffect(() => {
     if (!hostRef.current) return;
@@ -637,11 +639,27 @@ function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
     return () => document.removeEventListener('fullscreenchange', onFs);
   }, []);
 
-  const savePng = () => {
-    if (!hostRef.current) return;
+  React.useEffect(() => () => {
+    if (copyStateTimerRef.current) clearTimeout(copyStateTimerRef.current);
+  }, []);
+
+  const setCopyFeedback = (text) => {
+    setCopyState(text);
+    if (copyStateTimerRef.current) clearTimeout(copyStateTimerRef.current);
+    copyStateTimerRef.current = setTimeout(() => setCopyState(''), 1400);
+  };
+
+  const getThreeDPngBlob = async () => {
+    if (!hostRef.current) return null;
     const canvas = hostRef.current.querySelector('canvas');
-    if (!canvas) return;
-    canvas.toBlob((blob) => {
+    if (!canvas) return null;
+    return await new Promise((resolve) => {
+      canvas.toBlob((blob) => resolve(blob || null), 'image/png');
+    });
+  };
+
+  const savePng = () => {
+    getThreeDPngBlob().then((blob) => {
       if (!blob) return;
       const a = document.createElement('a');
       const url = URL.createObjectURL(blob);
@@ -651,7 +669,31 @@ function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }, 'image/png');
+    });
+  };
+
+  const copyPng = async () => {
+    try {
+      const blob = await getThreeDPngBlob();
+      if (!blob) return;
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new window.ClipboardItem({ 'image/png': blob })]);
+        setCopyFeedback('Copied');
+        return;
+      }
+      const a = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+      a.download = `spacecraft-3d-${scale.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setCopyFeedback('Saved');
+    } catch (err) {
+      console.warn('3D copy failed', err);
+      setCopyFeedback('Copy failed');
+    }
   };
 
   const saveSvg = () => {
@@ -716,6 +758,7 @@ function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
           <button onClick={toggleMaximize} title="Maximize 3D">{isMaximized ? '⤡' : '⤢'}</button>
           <button onClick={saveSvg} title="Export 3D SVG">SVG</button>
           <button onClick={savePng} title="Export 3D PNG">PNG</button>
+          <button onClick={copyPng} title="Copy 3D PNG to clipboard">{copyState === 'Copied' ? 'COPIED' : 'COPY'}</button>
         </div>
       </div>
       <div

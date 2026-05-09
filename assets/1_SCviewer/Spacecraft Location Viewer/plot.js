@@ -424,7 +424,7 @@ function buildPlot(scale, ctx, opts = {}) {
   }
 
   // --- Spacecraft
-  const hideOnSystem = new Set(['magnetospheric', 'solar_l1']);
+  const hideOnSystem = new Set(['magnetospheric', 'inner_magnetosphere', 'solar_l1']);
   const ordered = [...ctx.selected].sort((a, b) => {
     if (a.id === ctx.selectedScId) return 1;
     if (b.id === ctx.selectedScId) return -1;
@@ -435,6 +435,7 @@ function buildPlot(scale, ctx, opts = {}) {
 
   for (const sc of ordered) {
     if (isSystem && hideOnSystem.has(sc.group)) continue;
+    if (scale.id === 'l1' && sc.group === 'inner_magnetosphere') continue;
 
     const track = ctx.tracks.get(sc.id);
     if (!track || track.length === 0) continue;

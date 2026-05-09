@@ -45,7 +45,7 @@ function Sidebar({
   const commitStart = () => onDateChange('start', draftStart);
   const commitEnd = () => onDateChange('end', draftEnd);
 
-  const groupOrder = ['magnetospheric', 'solar_l1', 'inner_heli', 'deep_space'];
+  const groupOrder = ['magnetospheric', 'inner_magnetosphere', 'solar_l1', 'inner_heli', 'deep_space'];
 
   return (
     <aside className="sidebar">

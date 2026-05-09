@@ -14,6 +14,19 @@ function PlotPanel({
   hasManualHalfWidth,
 }) {
   const hostRef = React.useRef(null);
+  const [copyState, setCopyState] = React.useState('');
+  const copyStateTimerRef = React.useRef(null);
+
+  function setCopyFeedback(text) {
+    setCopyState(text);
+    if (copyStateTimerRef.current) clearTimeout(copyStateTimerRef.current);
+    copyStateTimerRef.current = setTimeout(() => setCopyState(''), 1400);
+  }
+
+  React.useEffect(() => () => {
+    if (copyStateTimerRef.current) clearTimeout(copyStateTimerRef.current);
+  }, []);
+
   function scTargetFromEventTarget(target) {
     if (!target || typeof target.closest !== 'function') return null;
     const match = target.closest('.sc-dot');
@@ -58,28 +71,63 @@ function PlotPanel({
   };
   const exportPNG = async (e) => {
     e.stopPropagation();
+    const blob = await getPanelPngBlob();
+    if (blob) triggerDownload(blob, `${slug(scale.name)}-${scale.plane}.png`);
+  };
+
+  const copyPNG = async (e) => {
+    e.stopPropagation();
+    try {
+      const blob = await getPanelPngBlob();
+      if (!blob) return;
+      if (navigator.clipboard && window.ClipboardItem) {
+        await navigator.clipboard.write([new window.ClipboardItem({ 'image/png': blob })]);
+        setCopyFeedback('Copied');
+        return;
+      }
+      triggerDownload(blob, `${slug(scale.name)}-${scale.plane}.png`);
+      setCopyFeedback('Saved');
+    } catch (err) {
+      console.warn('Copy PNG failed:', err);
+      setCopyFeedback('Copy failed');
+    }
+  };
+
+  async function getPanelPngBlob() {
     const svg = hostRef.current._svg;
-    if (!svg) return;
+    if (!svg) return null;
     const ser = new XMLSerializer().serializeToString(svg);
     const svgBlob = new Blob([ser], { type: 'image/svg+xml;charset=utf-8' });
     const url = URL.createObjectURL(svgBlob);
-    const img = new Image();
-    img.onload = () => {
-      const scale2 = 2;
-      const c = document.createElement('canvas');
-      c.width = svg.width.baseVal.value * scale2;
-      c.height = svg.height.baseVal.value * scale2;
-      const ctx2 = c.getContext('2d');
-      ctx2.fillStyle = '#fafaf7';
-      ctx2.fillRect(0, 0, c.width, c.height);
-      ctx2.drawImage(img, 0, 0, c.width, c.height);
-      c.toBlob(blob => {
-        triggerDownload(blob, `${slug(scale.name)}-${scale.plane}.png`);
-        URL.revokeObjectURL(url);
-      }, 'image/png');
-    };
-    img.src = url;
-  };
+    try {
+      const blob = await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          const scale2 = 2;
+          const c = document.createElement('canvas');
+          c.width = svg.width.baseVal.value * scale2;
+          c.height = svg.height.baseVal.value * scale2;
+          const ctx2 = c.getContext('2d');
+          if (!ctx2) {
+            reject(new Error('Canvas context unavailable'));
+            return;
+          }
+          ctx2.fillStyle = '#fafaf7';
+          ctx2.fillRect(0, 0, c.width, c.height);
+          ctx2.drawImage(img, 0, 0, c.width, c.height);
+          c.toBlob((pngBlob) => {
+            if (!pngBlob) reject(new Error('PNG conversion failed'));
+            else resolve(pngBlob);
+          }, 'image/png');
+        };
+        img.onerror = () => reject(new Error('Failed to rasterize panel image'));
+        img.src = url;
+      });
+      return blob;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
 
   const promptRange = (e) => {
     e.stopPropagation();
@@ -113,6 +161,7 @@ function PlotPanel({
           )}
           <button onClick={exportSVG} title="Export SVG">SVG</button>
           <button onClick={exportPNG} title="Export PNG">PNG</button>
+          <button onClick={copyPNG} title="Copy PNG to clipboard">{copyState === 'Copied' ? 'COPIED' : 'COPY'}</button>
         </div>
       </div>
       <div ref={hostRef} className="plot-host" />
