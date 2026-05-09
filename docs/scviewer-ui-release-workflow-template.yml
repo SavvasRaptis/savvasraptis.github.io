@@ -81,4 +81,4 @@ jobs:
             -f client_payload[ui_repo]="${{ github.repository }}" \
             -f client_payload[release_tag]="${{ steps.tag.outputs.tag }}" \
             -f client_payload[asset_name]='scviewer-ui-dist.zip' \
-            -f client_payload[target_dir]='Spacecraft Location Viewer'
+            -f client_payload[target_dir]='assets/1_SCviewer/Spacecraft Location Viewer'

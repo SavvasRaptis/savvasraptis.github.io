@@ -20,7 +20,7 @@ on:
       target_dir:
         description: "Published directory in this website repo"
         required: true
-        default: "Spacecraft Location Viewer"
+        default: "assets/1_SCviewer/Spacecraft Location Viewer"
         type: string
   repository_dispatch:
     types: [scviewer_ui_release]
@@ -45,7 +45,7 @@ jobs:
             echo "ui_repo=${{ github.event.client_payload.ui_repo }}" >> "$GITHUB_OUTPUT"
             echo "release_tag=${{ github.event.client_payload.release_tag }}" >> "$GITHUB_OUTPUT"
             echo "asset_name=${{ github.event.client_payload.asset_name || 'scviewer-ui-dist.zip' }}" >> "$GITHUB_OUTPUT"
-            echo "target_dir=${{ github.event.client_payload.target_dir || 'Spacecraft Location Viewer' }}" >> "$GITHUB_OUTPUT"
+            echo "target_dir=${{ github.event.client_payload.target_dir || 'assets/1_SCviewer/Spacecraft Location Viewer' }}" >> "$GITHUB_OUTPUT"
           else
             echo "ui_repo=${{ inputs.ui_repo }}" >> "$GITHUB_OUTPUT"
             echo "release_tag=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
