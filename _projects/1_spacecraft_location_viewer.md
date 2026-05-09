@@ -17,7 +17,7 @@ This dashboard shows spacecraft trajectories and positions for heliospheric miss
 <p class="viewer-launch-wrap">
   <a
     class="viewer-launch-btn"
-    href="{{ '/assets/1_SCviewer/Spacecraft%20Location%20Viewer/Heliospheric%20Locator.html' | relative_url }}"
+    href="{{ '/scviewer-ui/Heliospheric%20Locator.html' | relative_url }}"
     target="_blank"
     rel="noopener noreferrer"
   >
@@ -27,7 +27,7 @@ This dashboard shows spacecraft trajectories and positions for heliospheric miss
 
 <iframe
   class="viewer-embed-frame"
-  src="{{ '/assets/1_SCviewer/Spacecraft%20Location%20Viewer/Heliospheric%20Locator.html' | relative_url }}"
+  src="{{ '/scviewer-ui/Heliospheric%20Locator.html' | relative_url }}"
   title="Spacecraft Location Viewer"
   loading="lazy"
 ></iframe>
