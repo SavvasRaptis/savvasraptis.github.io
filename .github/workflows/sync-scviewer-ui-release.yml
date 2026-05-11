@@ -1,0 +1,85 @@
+name: Sync SCViewer UI Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ui_repo:
+        description: "UI repository (owner/repo)"
+        required: true
+        default: "SavvasRaptis/scviewer-ui"
+      release_tag:
+        description: "Release tag (example: v1.0.1)"
+        required: true
+      asset_name:
+        description: "Release asset zip name"
+        required: true
+        default: "scviewer-ui-dist.zip"
+      target_dir:
+        description: "Website target directory"
+        required: true
+        default: "scviewer-ui"
+  repository_dispatch:
+    types: [scviewer_ui_release]
+
+permissions:
+  contents: write
+
+jobs:
+  sync-ui-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve inputs
+        id: cfg
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            echo "ui_repo=${{ github.event.client_payload.ui_repo }}" >> "$GITHUB_OUTPUT"
+            echo "release_tag=${{ github.event.client_payload.release_tag }}" >> "$GITHUB_OUTPUT"
+            echo "asset_name=${{ github.event.client_payload.asset_name || 'scviewer-ui-dist.zip' }}" >> "$GITHUB_OUTPUT"
+            echo "target_dir=${{ github.event.client_payload.target_dir || 'scviewer-ui' }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ui_repo=${{ inputs.ui_repo }}" >> "$GITHUB_OUTPUT"
+            echo "release_tag=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+            echo "asset_name=${{ inputs.asset_name }}" >> "$GITHUB_OUTPUT"
+            echo "target_dir=${{ inputs.target_dir }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download UI release asset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/scviewer-asset"
+          gh release download "${{ steps.cfg.outputs.release_tag }}" \
+            --repo "${{ steps.cfg.outputs.ui_repo }}" \
+            --pattern "${{ steps.cfg.outputs.asset_name }}" \
+            --dir "$RUNNER_TEMP/scviewer-asset"
+
+      - name: Unpack and sync target directory
+        shell: bash
+        run: |
+          set -euo pipefail
+          unzip -o "$RUNNER_TEMP/scviewer-asset/${{ steps.cfg.outputs.asset_name }}" -d "$RUNNER_TEMP/scviewer-unpack"
+          mkdir -p "${{ steps.cfg.outputs.target_dir }}"
+          rsync -av --delete "$RUNNER_TEMP/scviewer-unpack/" "${{ steps.cfg.outputs.target_dir }}/"
+
+      - name: Commit and push if changed
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ steps.cfg.outputs.target_dir }}"
+          git commit -m "Sync SCViewer UI ${{ steps.cfg.outputs.release_tag }} to ${{ steps.cfg.outputs.target_dir }}"
+          git push
