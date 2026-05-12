@@ -66,6 +66,12 @@ function plotTheme() {
     axis: dark ? '#7d8ba0' : 'oklch(0.28 0.01 260)',
     halo: dark ? '#111827' : '#ffffff',
     legendBg: dark ? 'rgba(21,28,42,0.92)' : 'rgba(255,255,255,0.87)',
+    earthFill: dark ? '#60a5fa' : '#2b62cc',
+    earthStroke: dark ? '#bfdbfe' : 'oklch(0.22 0.15 250)',
+    earthText: dark ? '#bfdbfe' : 'oklch(0.28 0.16 250)',
+    sunFill: dark ? '#fbbf24' : '#f59e0b',
+    sunStroke: dark ? '#fde68a' : 'oklch(0.52 0.17 50)',
+    sunText: dark ? '#fde68a' : 'oklch(0.38 0.15 58)',
   };
 }
 
@@ -371,11 +377,11 @@ function buildPlot(scale, ctx, opts = {}) {
       content.appendChild(el('circle', { cx: sunX, cy: sunY, r: rDraw * 1.55, fill: 'oklch(0.94 0.12 80 / 0.22)' }));
       content.appendChild(el('circle', { cx: sunX, cy: sunY, r: rDraw * 1.18, fill: 'oklch(0.92 0.14 78 / 0.28)' }));
     }
-    content.appendChild(el('circle', { cx: sunX, cy: sunY, r: rDraw, fill: `url(#${sunGradId})`, stroke: 'oklch(0.52 0.17 50)', 'stroke-width': 1.3 }));
+    content.appendChild(el('circle', { cx: sunX, cy: sunY, r: rDraw, fill: theme.dark ? theme.sunFill : `url(#${sunGradId})`, stroke: theme.sunStroke, 'stroke-width': 1.3 }));
     content.appendChild(el('text', {
       x: sunX, y: sunY + rDraw + refLabelSize + 4,
       'text-anchor': 'middle',
-      'font-size': refLabelSize, 'font-weight': 800, fill: 'oklch(0.38 0.15 58)',
+      'font-size': refLabelSize, 'font-weight': 800, fill: theme.sunText,
       'paint-order': 'stroke', stroke: theme.halo, 'stroke-width': 4, 'stroke-linejoin': 'round',
     }, 'Sun'));
   }
@@ -390,11 +396,11 @@ function buildPlot(scale, ctx, opts = {}) {
       : (scale.id === 'moonmag' ? earthRadiusPx * 1.45 : earthRadiusPx * 1.2);
     const iconR = isSystem ? 2.8 * fs : 2.5 * fs;
     const rDraw = Math.max(earthVisualPx, iconR);
-    content.appendChild(el('circle', { cx: eX, cy: eY, r: rDraw, fill: `url(#${earthGradId})`, stroke: 'oklch(0.22 0.15 250)', 'stroke-width': 1.3 }));
+    content.appendChild(el('circle', { cx: eX, cy: eY, r: rDraw, fill: theme.dark ? theme.earthFill : `url(#${earthGradId})`, stroke: theme.earthStroke, 'stroke-width': 1.3 }));
     content.appendChild(el('text', {
       x: eX, y: eY + rDraw + refLabelSize + 4,
       'text-anchor': 'middle',
-      'font-size': refLabelSize, 'font-weight': 800, fill: 'oklch(0.28 0.16 250)',
+      'font-size': refLabelSize, 'font-weight': 800, fill: theme.earthText,
       'paint-order': 'stroke', stroke: theme.halo, 'stroke-width': 4, 'stroke-linejoin': 'round',
     }, 'Earth'));
   }
@@ -659,6 +665,7 @@ function buildPlot(scale, ctx, opts = {}) {
 }
 
 function build3DTraces(scale, ctx) {
+  const theme = plotTheme();
   const unitKm = scale.unit === 'AU' ? AU_KM : RE_KM;
   const traces = [];
 
@@ -727,7 +734,7 @@ function build3DTraces(scale, ctx) {
     x: [(-scale.center.x) / unitKm],
     y: [(-scale.center.y) / unitKm],
     z: [(-scale.center.z) / unitKm],
-    marker: { size: 8, color: '#2b62cc' },
+    marker: { size: 8, color: theme.earthFill, line: { color: theme.earthStroke, width: 1.2 } },
     text: ['Earth'],
     textposition: 'bottom center',
   });
@@ -1039,28 +1046,28 @@ function build3DFallbackCanvas(host, scale, ctx) {
     // Reference bodies/points based on the actual centered frame.
     const earth = proj(rot(pointFromKm(0, 0, 0)));
     if (isOnScreen(earth)) {
-      g.fillStyle = '#2b62cc';
+      g.fillStyle = theme.earthFill;
       g.beginPath();
       g.arc(earth.sx, earth.sy, 6, 0, Math.PI * 2);
       g.fill();
       g.strokeStyle = theme.paper;
       g.lineWidth = 1.5;
       g.stroke();
-      g.fillStyle = '#183a7a';
+      g.fillStyle = theme.earthText;
       g.font = '700 11px Inter Tight, sans-serif';
       g.fillText('Earth', earth.sx + 8, earth.sy + 12);
     }
 
     const sun = proj(rot(pointFromKm(AU_KM, 0, 0)));
     if (isOnScreen(sun)) {
-      g.fillStyle = '#f59e0b';
+      g.fillStyle = theme.sunFill;
       g.beginPath();
       g.arc(sun.sx, sun.sy, 7, 0, Math.PI * 2);
       g.fill();
       g.strokeStyle = theme.paper;
       g.lineWidth = 1.5;
       g.stroke();
-      g.fillStyle = '#92400e';
+      g.fillStyle = theme.sunText;
       g.font = '700 11px Inter Tight, sans-serif';
       g.fillText('Sun', sun.sx + 9, sun.sy + 11);
     }
