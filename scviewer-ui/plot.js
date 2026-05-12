@@ -1,6 +1,6 @@
 // Professional 2D plot builder. Returns an <svg>.
 // scale: { name, plane, unit, halfWidth, center, id? }
-// ctx:   { selected, tracks, planets, planetTracks, showBS, showMP, showOrbits, showLabels, showL1L2, showMoon, showPlanets,
+// ctx:   { selected, tracks, planets, planetTracks, moonTrack, showBS, showMP, showOrbits, showLabels, showL1L2, showMoon, showPlanets,
 //          selectedScId, hoveredId, endDate }
 // opts:  { width, height, fontScale, showLegend }
 
@@ -8,9 +8,6 @@
 const { AU_KM, RE_KM, L1_KM, L2_KM, MOON_KM, GROUPS } = window.SC_DATA;
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const SUN_RADIUS_KM = 696_340;
-const MOON_ORBIT_INCLINATION_DEG = 5.145;
-const MOON_ORBIT_INCLINATION_RAD = MOON_ORBIT_INCLINATION_DEG * Math.PI / 180;
-const MOON_ORBIT_Z_FACTOR = Math.sin(MOON_ORBIT_INCLINATION_RAD);
 // Visual (not physical) marker scales tuned for readability.
 const SYSTEM_SUN_RADIUS_AU = 0.041;    // ~0.082 AU diameter in Sun-Earth view.
 const SYSTEM_EARTH_RADIUS_AU = 0.012;  // small Earth marker in Sun-Earth view.
@@ -283,46 +280,56 @@ function buildPlot(scale, ctx, opts = {}) {
     }));
   }
 
-  // Moon orbit overlay.
+  // Moon marker/orbit overlay from real static/API ephemeris data.
   const earthRadiusPx = RE_KM * pxPerKmX;
-  const moonOrbitPx = MOON_KM * pxPerKmX;
-  // Always show on moonmag scale; otherwise gated by toggle + size.
-  const isMoonMag = scale.id === 'moonmag';
-  const showMoonOrbit = isMoonMag || (ctx.showMoon && moonOrbitPx > 18 && moonOrbitPx < Math.min(plotW, plotH) * 0.55);
-  if (showMoonOrbit) {
-    const [ex, ey] = worldToScreen({ x: 0, y: 0, z: 0 });
-    // XY is the ecliptic plane, so the projected orbit is circular there.
-    // In XZ, project an inclined (~5.145 deg) lunar orbit to avoid the incorrect full-radius circle.
-    if (scale.plane === 'xy') {
-      content.appendChild(el('circle', {
-        cx: ex, cy: ey, r: moonOrbitPx, fill: 'none',
-        stroke: 'oklch(0.55 0.01 260 / 0.65)',
-        'stroke-width': 1.2, 'stroke-dasharray': '4 4',
-      }));
-    } else {
-      const nPts = 180;
-      const pathPts = [];
-      for (let i = 0; i <= nPts; i++) {
-        const th = (i / nPts) * Math.PI * 2;
-        const p = {
-          x: MOON_KM * Math.cos(th),
-          y: 0,
-          z: MOON_KM * MOON_ORBIT_Z_FACTOR * Math.sin(th),
-        };
-        pathPts.push(worldToScreen(p));
-      }
-      const d = pathPts
-        .map(([x, y], i) => `${i === 0 ? 'M' : 'L'} ${x} ${y}`)
-        .join(' ') + ' Z';
+  const showMoonTrack = scale.id === 'moonmag' && ctx.showMoon && Array.isArray(ctx.moonTrack) && ctx.moonTrack.length > 0;
+  if (showMoonTrack) {
+    const moonColor = 'oklch(0.52 0.02 260)';
+    if (ctx.moonTrack.length > 1) {
+      const d = ctx.moonTrack
+        .map((p, i) => {
+          const [x, y] = worldToScreen(p);
+          return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+        })
+        .join(' ');
       content.appendChild(el('path', {
         d,
         fill: 'none',
-        stroke: 'oklch(0.55 0.01 260 / 0.65)',
-        'stroke-width': 1.2,
-        'stroke-dasharray': '4 4',
+        stroke: 'oklch(0.52 0.02 260 / 0.75)',
+        'stroke-width': 1.5,
+        'stroke-dasharray': '5 4',
+        'stroke-linecap': 'round',
+        'stroke-linejoin': 'round',
       }));
     }
-
+    const moon = ctx.moonTrack[ctx.moonTrack.length - 1];
+    const [mx, my] = worldToScreen(moon);
+    const visible = mx > PAD_L - 20 && mx < PAD_L + plotW + 20 && my > PAD_T - 20 && my < PAD_T + plotH + 20;
+    if (visible) {
+      const gMoon = el('g', { class: 'moon-dot', 'data-hover-id': 'body:MOON' });
+      addSvgTitle(gMoon, 'Moon');
+      gMoon.appendChild(el('circle', {
+        cx: mx,
+        cy: my,
+        r: 5.5 * fs,
+        fill: theme.paper,
+        stroke: moonColor,
+        'stroke-width': 2,
+      }));
+      gMoon.appendChild(el('circle', { cx: mx - 1.5 * fs, cy: my - 1.5 * fs, r: 1.4 * fs, fill: moonColor, opacity: 0.65 }));
+      content.appendChild(gMoon);
+      content.appendChild(el('text', {
+        x: mx + 9 * fs,
+        y: my - 7 * fs,
+        'font-size': bodyLabelSize * 0.92,
+        'font-weight': 700,
+        fill: theme.ink,
+        'paint-order': 'stroke',
+        stroke: theme.halo,
+        'stroke-width': 3.5,
+        'stroke-linejoin': 'round',
+      }, 'Moon'));
+    }
   }
 
   // --- BS / MP
@@ -786,6 +793,17 @@ function build3DFallbackCanvas(host, scale, ctx) {
       });
     }
   }
+  const moonSeries = (ctx.showMoon && Array.isArray(ctx.moonTrack) && ctx.moonTrack.length)
+    ? {
+        name: 'Moon',
+        color: '#7b8190',
+        points: ctx.moonTrack.map((p) => ({
+          x: (p.x - scale.center.x) / unitKm,
+          y: (p.y - scale.center.y) / unitKm,
+          z: (p.z - scale.center.z) / unitKm,
+        })),
+      }
+    : null;
 
   let yaw = 0.9;
   let pitch = 0.45;
@@ -1079,6 +1097,36 @@ function build3DFallbackCanvas(host, scale, ctx) {
       g.fillStyle = theme.ink2;
       g.font = '600 10px Inter Tight, sans-serif';
       g.fillText(pl.name, pp.sx + 7, pp.sy - 6);
+    }
+
+    if (moonSeries?.points?.length) {
+      g.save();
+      g.strokeStyle = 'rgba(115,124,140,0.78)';
+      g.lineWidth = 1.7;
+      g.setLineDash([5, 4]);
+      g.beginPath();
+      moonSeries.points.forEach((p, i) => {
+        const pp = proj(rot(p));
+        if (i === 0) g.moveTo(pp.sx, pp.sy);
+        else g.lineTo(pp.sx, pp.sy);
+      });
+      g.stroke();
+      g.setLineDash([]);
+      const moon = moonSeries.points[moonSeries.points.length - 1];
+      const mp = proj(rot(moon));
+      if (isOnScreen(mp)) {
+        g.fillStyle = theme.paper;
+        g.beginPath();
+        g.arc(mp.sx, mp.sy, 5.5, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = '#7b8190';
+        g.lineWidth = 1.6;
+        g.stroke();
+        g.fillStyle = theme.ink2;
+        g.font = '700 10px Inter Tight, sans-serif';
+        g.fillText('Moon', mp.sx + 8, mp.sy - 7);
+      }
+      g.restore();
     }
 
     g.fillStyle = theme.ink;

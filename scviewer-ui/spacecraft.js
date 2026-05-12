@@ -19,6 +19,7 @@ const API_BASE = (window.SC_API_BASE || 'http://localhost:8000').replace(/\/+$/,
 const DATA_BASE = (window.SC_DATA_BASE || '').replace(/\/+$/, '');
 const DATA_MANIFEST_PATH = window.SC_DATA_MANIFEST_PATH || '/scdata/manifest.json';
 const STATIC_PATH_TEMPLATE = '/scdata/{step}/{frame}/{id}/{yyyy}/{mm}.json.gz';
+const BODY_STATIC_PATH_TEMPLATE = '/scdata/bodies/{step}/{frame}/{id}/{yyyy}/{mm}.json.gz';
 const STATIC_FETCH_TIMEOUT_MS = Number(window.SC_STATIC_FETCH_TIMEOUT_MS || 12_000);
 const API_FALLBACK_TIMEOUT_MS = Number(window.SC_API_FALLBACK_TIMEOUT_MS || 45_000);
 const DATA_BASE_CANDIDATES = deriveDataBaseCandidates(DATA_BASE);
@@ -33,6 +34,8 @@ const GROUPS = {
 
 const SYMBOLS = ['circle', 'square', 'triangle', 'diamond', 'star', 'cross', 'triangleDown', 'pentagon'];
 const PLANET_IDS = ['MERCURY', 'VENUS', 'MARS', 'JUPITER', 'SATURN', 'URANUS', 'NEPTUNE'];
+const MOON_ID = 'MOON';
+const BODY_IDS = [...PLANET_IDS, MOON_ID];
 const PLANETS = [
   { id: 'MERCURY', name: 'Mercury', color: '#8a7d72' },
   { id: 'VENUS', name: 'Venus', color: '#c89648' },
@@ -270,6 +273,18 @@ function availableMonthsFromManifest(manifest, step, frame, id) {
   return null;
 }
 
+function availableBodyMonthsFromManifest(manifest, step, frame, id) {
+  const frameKey = String(frame || 'GSE').toUpperCase();
+  const bodySteps = manifest?.bodies?.steps;
+  const v1 = extractMonths(bodySteps?.[step]?.[frameKey]?.[id]);
+  if (v1) return new Set(v1);
+
+  const v1Legacy = extractMonths(bodySteps?.[step]?.[id]);
+  if (v1Legacy) return new Set(v1Legacy);
+
+  return null;
+}
+
 async function parseMaybeGzipJson(response, url) {
   if (!url.endsWith('.gz')) return response.json();
   const buf = await response.arrayBuffer();
@@ -400,6 +415,82 @@ async function loadStaticPositions(ids, startISO, endISO, step, frame, signal) {
           _chunkPromiseCache.delete(cacheKey);
           if (!isAbortError(error)) {
             console.warn(`[SC Viewer] Static chunk fetch/decode failed for ${id} ${ym}.`, error);
+          }
+          return [];
+        }
+      }));
+
+      const merged = chunkRows.reduce((acc, rows) => mergeByEpoch(acc, rows), []);
+      payload[id] = merged;
+      if (missing.length === 0 && !hadChunkError) completeIds.add(id);
+    })
+  );
+
+  return { payload, completeIds, usedStatic: true };
+}
+
+async function loadStaticBodyPositions(ids, startISO, endISO, step, frame, signal) {
+  const frameValue = String(frame || 'GSE').toUpperCase();
+  if (!DATA_BASE) return { payload: {}, completeIds: new Set(), usedStatic: false };
+
+  const manifest = await fetchManifest(signal);
+  if (!manifest) return { payload: {}, completeIds: new Set(), usedStatic: false };
+
+  const manifestTemplate = manifest?.bodies?.path_template || BODY_STATIC_PATH_TEMPLATE;
+  const template = (typeof manifestTemplate === 'string' && manifestTemplate.includes('{frame}'))
+    ? manifestTemplate
+    : BODY_STATIC_PATH_TEMPLATE;
+  const months = monthKeysInRange(startISO, endISO);
+  const payload = {};
+  const completeIds = new Set();
+
+  await Promise.all(
+    ids.map(async (id) => {
+      const available = availableBodyMonthsFromManifest(manifest, step, frameValue, id);
+      if (!available) {
+        payload[id] = [];
+        return;
+      }
+
+      const required = months.filter((ym) => available.has(ym));
+      const missing = months.filter((ym) => !available.has(ym));
+      let hadChunkError = false;
+      const chunkRows = await Promise.all(required.map(async (ym) => {
+        const path = chunkPath(step, frameValue, id, ym, template);
+        const urls = buildDataUrls(path);
+        const cacheKey = urls[0] || path;
+        let promise = _chunkPromiseCache.get(cacheKey);
+        if (!promise) {
+          promise = (async () => {
+            let lastError = null;
+            for (const url of urls) {
+              const { signal: combinedSignal, cleanup } = buildSignalWithTimeout(signal, STATIC_FETCH_TIMEOUT_MS);
+              try {
+                const response = await fetch(url, { signal: combinedSignal });
+                if (!response.ok) {
+                  lastError = new Error(`HTTP ${response.status}`);
+                  continue;
+                }
+                const decoded = await parseMaybeGzipJson(response, url);
+                return normalizeRows(rowsForIdFromChunk(decoded, id));
+              } catch (error) {
+                lastError = error;
+              } finally {
+                cleanup();
+              }
+            }
+            throw lastError || new Error('Static body chunk fetch failed from all data origins.');
+          })();
+          _chunkPromiseCache.set(cacheKey, promise);
+        }
+
+        try {
+          return await promise;
+        } catch (error) {
+          hadChunkError = true;
+          _chunkPromiseCache.delete(cacheKey);
+          if (!isAbortError(error)) {
+            console.warn(`[SC Viewer] Static body chunk fetch/decode failed for ${id} ${ym}.`, error);
           }
           return [];
         }
@@ -616,19 +707,77 @@ async function fetchPlanetPositions(ids, startISO, endISO, step = '1h', frame = 
   const idsList = Array.isArray(ids) ? ids : String(ids).split(',').map((s) => s.trim()).filter(Boolean);
   const cleanIds = idsList.map((id) => String(id).toUpperCase()).filter((id) => PLANET_IDS.includes(id));
   if (!cleanIds.length) return {};
+  return fetchBodyPositions(cleanIds, startISO, endISO, step, frame, signal);
+}
+
+async function fetchApiBodyPositions(ids, startISO, endISO, step = '1h', frame = 'GSE', signal) {
   const frameValue = String(frame || 'GSE').toUpperCase();
-  const url = buildApiUrl('/planets', { ids: cleanIds.join(','), start: startISO, end: endISO, step, frame: frameValue });
-  const response = await fetch(url, { signal });
+  const idsValue = Array.isArray(ids) ? ids.join(',') : ids;
+  const url = buildApiUrl('/planets', { ids: idsValue, start: startISO, end: endISO, step, frame: frameValue });
+  const { signal: combinedSignal, cleanup } = buildSignalWithTimeout(signal, API_FALLBACK_TIMEOUT_MS);
+  let response;
+  try {
+    response = await fetch(url, { signal: combinedSignal });
+  } finally {
+    cleanup();
+  }
   if (!response.ok) {
     const body = await response.text().catch(() => '');
-    throw new Error(`Planet positions fetch failed (${response.status}): ${body || 'no response body'}`);
+    throw new Error(`Body positions fetch failed (${response.status}): ${body || 'no response body'}`);
   }
   const payload = await response.json();
-  const normalizedGse = {};
+  const normalized = {};
   for (const [key, value] of Object.entries(payload)) {
-    normalizedGse[key] = Array.isArray(value) ? value.map(normalizePoint) : [];
+    normalized[key] = Array.isArray(value) ? value.map(normalizePoint) : [];
   }
-  return normalizedGse;
+  return normalized;
+}
+
+async function fetchBodyPositions(ids, startISO, endISO, step = '1h', frame = 'GSE', signal) {
+  const idsList = Array.isArray(ids) ? ids : String(ids).split(',').map((s) => s.trim()).filter(Boolean);
+  const cleanIds = Array.from(new Set(idsList.map((id) => String(id).toUpperCase()).filter((id) => BODY_IDS.includes(id))));
+  if (!cleanIds.length) return {};
+  const frameValue = String(frame || 'GSE').toUpperCase();
+
+  let staticResult = { payload: {}, completeIds: new Set(), usedStatic: false };
+  try {
+    staticResult = await loadStaticBodyPositions(cleanIds, startISO, endISO, step, frameValue, signal);
+  } catch (error) {
+    if (!isAbortError(error)) console.warn('[SC Viewer] Static body data load failed; falling back to API.', error);
+  }
+
+  const missingIds = cleanIds.filter((id) => !staticResult.completeIds.has(id));
+  const apiPayload = {};
+  if (missingIds.length) {
+    let firstError = null;
+    try {
+      const chunk = await fetchApiBodyPositions(missingIds, startISO, endISO, step, frameValue, signal);
+      for (const id of missingIds) {
+        apiPayload[id] = Array.isArray(chunk[id]) ? chunk[id] : [];
+      }
+    } catch (error) {
+      firstError = error;
+      for (const id of missingIds) apiPayload[id] = [];
+    }
+
+    const hasStaticRows = Object.values(staticResult.payload || {}).some((rows) => Array.isArray(rows) && rows.length > 0);
+    const hasApiRows = Object.values(apiPayload || {}).some((rows) => Array.isArray(rows) && rows.length > 0);
+    if (firstError && !hasStaticRows && !hasApiRows) throw firstError;
+    if (firstError && !isAbortError(firstError)) console.warn('[SC Viewer] Body API fallback failed; returning static-only data.', firstError);
+  }
+
+  const merged = {};
+  for (const id of cleanIds) {
+    const fromStatic = staticResult.payload[id] || [];
+    const fromApi = apiPayload[id] || [];
+    merged[id] = clipRowsToWindow(mergeByEpoch(fromStatic, fromApi), startISO, endISO);
+  }
+  return merged;
+}
+
+async function fetchMoonPositions(startISO, endISO, step = '1h', frame = 'GSE', signal) {
+  const payload = await fetchBodyPositions([MOON_ID], startISO, endISO, step, frame, signal);
+  return payload[MOON_ID] || [];
 }
 
 async function generatePositions(sc, startISO, endISO, step = '1h', frame = 'GSE', signal) {
@@ -676,8 +825,10 @@ window.SC_DATA = {
   SYMBOLS,
   CATALOG,
   PLANETS,
+  MOON_ID,
   fetchPositions,
   fetchPlanetPositions,
+  fetchMoonPositions,
   generatePositions,
   generateYear,
   fetchCatalog,

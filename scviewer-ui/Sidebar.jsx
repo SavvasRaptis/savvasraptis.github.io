@@ -68,7 +68,7 @@ function Sidebar({
 
   selectedIds, onToggle, onToggleGroup,
   expandedGroups, onToggleExpand,
-  showBS, showMP, showOrbits, showLabels, showL1L2, showPlanets,
+  showBS, showMP, showOrbits, showLabels, showL1L2, showPlanets, showMoon,
   onFlag,
   showLegend, setShowLegend,
   autoFitPairs, setAutoFitPairs,
@@ -181,6 +181,7 @@ function Sidebar({
           <SbFlag label="Magnetopause" checked={showMP} onChange={v => onFlag('showMP', v)} />
           <SbFlag label="Bow shock" checked={showBS} onChange={v => onFlag('showBS', v)} />
           <SbFlag label="Planet markers" checked={showPlanets} onChange={v => onFlag('showPlanets', v)} />
+          <SbFlag label="Moon marker" checked={showMoon} onChange={v => onFlag('showMoon', v)} />
           <SbFlag label="Spacecraft names in plot" checked={showLabels} onChange={v => onFlag('showLabels', v)} />
           <SbFlag label="L1 / L2 markers" checked={showL1L2} onChange={v => onFlag('showL1L2', v)} />
           <SbFlag label="Legend panel" checked={showLegend} onChange={setShowLegend} />

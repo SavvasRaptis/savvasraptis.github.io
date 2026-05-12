@@ -5,6 +5,7 @@ const {
   PLANETS: APP_PLANETS,
   fetchPositions,
   fetchPlanetPositions,
+  fetchMoonPositions,
   generateYear,
   AU_KM: APP_AU_KM,
   RE_KM: APP_RE_KM,
@@ -90,8 +91,10 @@ function App() {
   const [rangeWarn, setRangeWarn] = React.useState(null);
   const [tracks, setTracks] = React.useState(new Map());
   const [planetTracks, setPlanetTracks] = React.useState({});
+  const [moonTrack, setMoonTrack] = React.useState([]);
   const [tracksLoading, setTracksLoading] = React.useState(false);
   const [planetLoading, setPlanetLoading] = React.useState(false);
+  const [moonLoading, setMoonLoading] = React.useState(false);
   const [tracksError, setTracksError] = React.useState(null);
   const [downloadingYear, setDownloadingYear] = React.useState(false);
 
@@ -181,6 +184,32 @@ function App() {
     return () => controller.abort();
   }, [flags.showPlanets, startISO, endISO, step, frame]);
 
+  React.useEffect(() => {
+    const controller = new AbortController();
+
+    async function loadMoon() {
+      if (!flags.showMoon) {
+        setMoonTrack([]);
+        setMoonLoading(false);
+        return;
+      }
+      setMoonLoading(true);
+      try {
+        const payload = await fetchMoonPositions(startISO, endISO, step, frame, controller.signal);
+        setMoonTrack(Array.isArray(payload) ? payload : []);
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+        setTracksError(error?.message || 'Failed to load Moon positions from backend.');
+        setMoonTrack([]);
+      } finally {
+        if (!controller.signal.aborted) setMoonLoading(false);
+      }
+    }
+
+    loadMoon();
+    return () => controller.abort();
+  }, [flags.showMoon, startISO, endISO, step, frame]);
+
   const getAutoHalfWidth = React.useCallback((baseScale) => {
     if (!autoFitPairs) return baseScale.halfWidth;
     const allowedGroups =
@@ -254,6 +283,7 @@ function App() {
     tracks,
     planets: APP_PLANETS,
     planetTracks,
+    moonTrack,
     frame,
     ...flags,
     hoveredId,
@@ -537,10 +567,10 @@ function App() {
               {tracksError && `Backend error: ${tracksError}`}
             </div>
           )}
-          {(tracksLoading || planetLoading) && (
+          {(tracksLoading || planetLoading || moonLoading) && (
             <div className="loading-overlay" role="status" aria-live="polite">
               <span className="loading-spinner" />
-              <span>{planetLoading ? `Loading ${frame} trajectories and planet markers...` : `Loading ${frame} trajectories from backend...`}</span>
+              <span>{(planetLoading || moonLoading) ? `Loading ${frame} trajectories and reference bodies...` : `Loading ${frame} trajectories...`}</span>
             </div>
           )}
 
@@ -677,7 +707,7 @@ function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
     return () => {
       if (typeof teardown === 'function') teardown();
     };
-  }, [selectedScaleId, ctx.selected, ctx.tracks, ctx.planetTracks, ctx.showPlanets, ctx.showBS, ctx.showMP, ctx.showLabels, ctx.showL1L2, ctx.selectedScId]);
+  }, [selectedScaleId, ctx.selected, ctx.tracks, ctx.planetTracks, ctx.moonTrack, ctx.showPlanets, ctx.showMoon, ctx.showBS, ctx.showMP, ctx.showLabels, ctx.showL1L2, ctx.selectedScId]);
 
   React.useEffect(() => {
     const onFs = () => setIsMaximized(document.fullscreenElement === shellRef.current);
