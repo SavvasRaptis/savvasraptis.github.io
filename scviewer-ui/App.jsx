@@ -47,7 +47,16 @@ function fmtUTC(iso) {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} UTC`;
 }
 
+function getInitialTheme() {
+  try {
+    const saved = window.localStorage?.getItem('scviewer-theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+  } catch (_) {}
+  return 'light';
+}
+
 function App() {
+  const [theme, setTheme] = React.useState(getInitialTheme);
   const [startISO, setStartISO] = React.useState('2025-12-01T00:00:00.000Z');
   const [endISO, setEndISO]     = React.useState('2025-12-08T00:00:00.000Z');
   const [cadence, setCadence]   = React.useState('hourly');
@@ -85,6 +94,13 @@ function App() {
   const [planetLoading, setPlanetLoading] = React.useState(false);
   const [tracksError, setTracksError] = React.useState(null);
   const [downloadingYear, setDownloadingYear] = React.useState(false);
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute('data-scviewer-theme', theme);
+    try {
+      window.localStorage?.setItem('scviewer-theme', theme);
+    } catch (_) {}
+  }, [theme]);
 
   const durationDays = (new Date(endISO).getTime() - new Date(startISO).getTime()) / ONE_DAY_MS;
   const selectedList = React.useMemo(() => APP_CATALOG.filter(s => selectedIds.has(s.id)), [selectedIds]);
@@ -445,7 +461,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className={`app theme-${theme}`}>
       <header className="topbar">
         <div className="brand">
           <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden>
@@ -470,6 +486,14 @@ function App() {
         <div className="mock-banner" title={`API source: ${APP_API_BASE}`}>
           <span className="pulse" /> LIVE API
         </div>
+        <button
+          className="theme-toggle"
+          onClick={() => setTheme((value) => value === 'dark' ? 'light' : 'dark')}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          <span aria-hidden>{theme === 'dark' ? '☀' : '☾'}</span>
+        </button>
       </header>
 
       <div className={showInspector ? 'main with-inspector' : 'main'}>
@@ -790,7 +814,7 @@ function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
           display: 'block',
           minHeight: '560px',
           height: '560px',
-          background: '#fff',
+          background: 'var(--plot-bg)',
           overflow: 'auto',
           padding: '0',
         }}

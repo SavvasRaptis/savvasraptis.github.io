@@ -49,6 +49,29 @@ function addSvgTitle(node, text) {
   return node;
 }
 
+function cssVar(name, fallback) {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
+function plotTheme() {
+  const dark = document.documentElement.getAttribute('data-scviewer-theme') === 'dark';
+  return {
+    dark,
+    paper: cssVar('--paper', dark ? '#151c2a' : '#ffffff'),
+    plotBg: cssVar('--plot-bg', dark ? '#111827' : '#ffffff'),
+    ink: cssVar('--ink', dark ? '#f4f7fb' : 'oklch(0.14 0.01 260)'),
+    ink2: cssVar('--ink-2', dark ? '#d7deea' : 'oklch(0.26 0.01 260)'),
+    ink3: cssVar('--ink-3', dark ? '#9aa8bc' : 'oklch(0.40 0.01 260)'),
+    rule: cssVar('--rule', dark ? '#273246' : 'oklch(0.88 0.005 260)'),
+    grid: dark ? '#263348' : 'oklch(0.92 0.004 260)',
+    zero: dark ? '#526178' : 'oklch(0.65 0.01 260)',
+    axis: dark ? '#7d8ba0' : 'oklch(0.28 0.01 260)',
+    halo: dark ? '#111827' : '#ffffff',
+    legendBg: dark ? 'rgba(21,28,42,0.92)' : 'rgba(255,255,255,0.87)',
+  };
+}
+
 // Draw a spacecraft symbol at (cx, cy) with size `s`. Returns the element.
 function drawSymbol(symbol, cx, cy, s, attrs) {
   const a = { fill: attrs.fill, stroke: attrs.stroke || '#fff', 'stroke-width': attrs.strokeWidth ?? 1.5, ...(attrs.dataAttrs || {}) };
@@ -99,6 +122,7 @@ function drawSymbol(symbol, cx, cy, s, attrs) {
 function buildPlot(scale, ctx, opts = {}) {
   const fs = opts.fontScale ?? 1;
   const showLegend = opts.showLegend ?? false;
+  const theme = plotTheme();
   // If legend on, reserve right column
   const W_total = opts.width ?? 620;
   const H = opts.height ?? 620;
@@ -125,8 +149,7 @@ function buildPlot(scale, ctx, opts = {}) {
     'font-family': "'Inter Tight', system-ui, sans-serif",
   });
 
-  // white bg for export
-  svg.appendChild(el('rect', { x: 0, y: 0, width: W_total, height: H, fill: '#ffffff' }));
+  svg.appendChild(el('rect', { x: 0, y: 0, width: W_total, height: H, fill: theme.paper }));
 
   const unitKm = scale.unit === 'AU' ? AU_KM : RE_KM;
   const halfKm = scale.halfWidth * unitKm;
@@ -177,8 +200,8 @@ function buildPlot(scale, ctx, opts = {}) {
   // --- Plot frame
   svg.appendChild(el('rect', {
     x: PAD_L, y: PAD_T, width: plotW, height: plotH,
-    fill: '#ffffff',
-    stroke: 'oklch(0.28 0.01 260)', 'stroke-width': 1.3,
+    fill: theme.plotBg,
+    stroke: theme.axis, 'stroke-width': 1.3,
   }));
 
   // --- Ticks
@@ -187,7 +210,7 @@ function buildPlot(scale, ctx, opts = {}) {
   const stepXVal = xStep.length > 1 ? xStep[1] - xStep[0] : 1;
   const stepYVal = yStep.length > 1 ? yStep[1] - yStep[0] : 1;
 
-  const gridG = el('g', { stroke: 'oklch(0.92 0.004 260)', 'stroke-width': 0.7 });
+  const gridG = el('g', { stroke: theme.grid, 'stroke-width': 0.7 });
   for (const tx of xStep) {
     if (tx <= xMinU || tx >= xMaxU) continue;
     const px = PAD_L + ((tx - xMinU) / (xMaxU - xMinU)) * plotW;
@@ -200,7 +223,7 @@ function buildPlot(scale, ctx, opts = {}) {
   }
   svg.appendChild(gridG);
 
-  const zeroG = el('g', { stroke: 'oklch(0.65 0.01 260)', 'stroke-width': 1.2, 'stroke-dasharray': '5 5' });
+  const zeroG = el('g', { stroke: theme.zero, 'stroke-width': 1.2, 'stroke-dasharray': '5 5' });
   if (xMinU <= 0 && xMaxU >= 0) {
     const zx = PAD_L + ((0 - xMinU) / (xMaxU - xMinU)) * plotW;
     zeroG.appendChild(el('line', { x1: zx, y1: PAD_T, x2: zx, y2: PAD_T + plotH }));
@@ -215,25 +238,25 @@ function buildPlot(scale, ctx, opts = {}) {
     'font-family': "'JetBrains Mono', ui-monospace, monospace",
     'font-size': tickSize,
     'font-weight': 500,
-    fill: 'oklch(0.22 0.01 260)',
+    fill: theme.ink2,
   });
   for (const tx of xStep) {
     if (tx < xMinU - 1e-9 || tx > xMaxU + 1e-9) continue;
     const px = PAD_L + ((tx - xMinU) / (xMaxU - xMinU)) * plotW;
-    tickG.appendChild(el('line', { x1: px, y1: PAD_T + plotH, x2: px, y2: PAD_T + plotH + 7, stroke: 'oklch(0.28 0.01 260)', 'stroke-width': 1.3 }));
+    tickG.appendChild(el('line', { x1: px, y1: PAD_T + plotH, x2: px, y2: PAD_T + plotH + 7, stroke: theme.axis, 'stroke-width': 1.3 }));
     tickG.appendChild(el('text', { x: px, y: PAD_T + plotH + tickSize + 10, 'text-anchor': 'middle' }, fmtTick(tx, stepXVal)));
   }
   for (const ty of yStep) {
     if (ty < yMinU - 1e-9 || ty > yMaxU + 1e-9) continue;
     const py = PAD_T + plotH - ((ty - yMinU) / (yMaxU - yMinU)) * plotH;
-    tickG.appendChild(el('line', { x1: PAD_L - 7, y1: py, x2: PAD_L, y2: py, stroke: 'oklch(0.28 0.01 260)', 'stroke-width': 1.3 }));
+    tickG.appendChild(el('line', { x1: PAD_L - 7, y1: py, x2: PAD_L, y2: py, stroke: theme.axis, 'stroke-width': 1.3 }));
     tickG.appendChild(el('text', { x: PAD_L - 11, y: py + tickSize * 0.36, 'text-anchor': 'end' }, fmtTick(ty, stepYVal)));
   }
   svg.appendChild(tickG);
 
   // axis labels (spelled out clearly — NO superscript exponent glyphs)
   const frameLabel = (ctx.frame || 'GSE').toUpperCase();
-  const axG = el('g', { fill: 'oklch(0.14 0.01 260)', 'font-size': axisLabelSize, 'font-weight': 700 });
+  const axG = el('g', { fill: theme.ink, 'font-size': axisLabelSize, 'font-weight': 700 });
   axG.appendChild(el('text', { x: PAD_L + plotW / 2, y: H - 22, 'text-anchor': 'middle' },
     `X ${frameLabel} (${unitLabel})`));
   axG.appendChild(el('text', {
@@ -346,7 +369,7 @@ function buildPlot(scale, ctx, opts = {}) {
       x: sunX, y: sunY + rDraw + refLabelSize + 4,
       'text-anchor': 'middle',
       'font-size': refLabelSize, 'font-weight': 800, fill: 'oklch(0.38 0.15 58)',
-      'paint-order': 'stroke', stroke: '#fff', 'stroke-width': 4, 'stroke-linejoin': 'round',
+      'paint-order': 'stroke', stroke: theme.halo, 'stroke-width': 4, 'stroke-linejoin': 'round',
     }, 'Sun'));
   }
 
@@ -365,7 +388,7 @@ function buildPlot(scale, ctx, opts = {}) {
       x: eX, y: eY + rDraw + refLabelSize + 4,
       'text-anchor': 'middle',
       'font-size': refLabelSize, 'font-weight': 800, fill: 'oklch(0.28 0.16 250)',
-      'paint-order': 'stroke', stroke: '#fff', 'stroke-width': 4, 'stroke-linejoin': 'round',
+      'paint-order': 'stroke', stroke: theme.halo, 'stroke-width': 4, 'stroke-linejoin': 'round',
     }, 'Earth'));
   }
 
@@ -377,14 +400,14 @@ function buildPlot(scale, ctx, opts = {}) {
       const s = 8 * fs;
       content.appendChild(el('path', {
         d: `M ${lx - s} ${ly} L ${lx} ${ly - s} L ${lx + s} ${ly} L ${lx} ${ly + s} Z`,
-        fill: '#fff', stroke: 'oklch(0.22 0.01 260)', 'stroke-width': 1.6,
+        fill: theme.paper, stroke: theme.ink, 'stroke-width': 1.6,
       }));
       content.appendChild(el('text', {
         x: lx, y: ly - s - 5,
         'text-anchor': 'middle',
         'font-family': "'JetBrains Mono', ui-monospace, monospace",
-        'font-size': refLabelSize * 0.9, 'font-weight': 700, fill: 'oklch(0.18 0.01 260)',
-        'paint-order': 'stroke', stroke: '#fff', 'stroke-width': 3.5, 'stroke-linejoin': 'round',
+        'font-size': refLabelSize * 0.9, 'font-weight': 700, fill: theme.ink,
+        'paint-order': 'stroke', stroke: theme.halo, 'stroke-width': 3.5, 'stroke-linejoin': 'round',
       }, label));
     }
   }
@@ -417,7 +440,7 @@ function buildPlot(scale, ctx, opts = {}) {
       const visible = px > PAD_L - 20 && px < PAD_L + plotW + 20 && py > PAD_T - 20 && py < PAD_T + plotH + 20;
       if (!visible) continue;
       const glyph = drawSymbol('diamond', px, py, 7.2 * fs, {
-        fill: '#ffffff',
+        fill: theme.paper,
         stroke: color,
         strokeWidth: 2.2,
       });
@@ -427,16 +450,16 @@ function buildPlot(scale, ctx, opts = {}) {
       });
       addSvgTitle(markerGroup, planet.name);
       markerGroup.appendChild(glyph);
-      markerGroup.appendChild(el('circle', { cx: px, cy: py, r: 2.5 * fs, fill: color, stroke: '#fff', 'stroke-width': 1.0 }));
+      markerGroup.appendChild(el('circle', { cx: px, cy: py, r: 2.5 * fs, fill: color, stroke: theme.paper, 'stroke-width': 1.0 }));
       content.appendChild(markerGroup);
       content.appendChild(el('text', {
         x: px + 9 * fs,
         y: py - 7 * fs,
         'font-size': bodyLabelSize * 0.92,
         'font-weight': 700,
-        fill: 'oklch(0.12 0.01 260)',
+        fill: theme.ink,
         'paint-order': 'stroke',
-        stroke: '#fff',
+        stroke: theme.halo,
         'stroke-width': 3.5,
         'stroke-linejoin': 'round',
       }, planet.name));
@@ -495,7 +518,7 @@ function buildPlot(scale, ctx, opts = {}) {
     }
     const sym = drawSymbol(sc.symbol || 'circle', lx, ly, baseS, {
       fill: color,
-      stroke: '#fff',
+      stroke: theme.paper,
       strokeWidth: 1.6 * fs,
       dataAttrs: { 'data-sc': sc.id, 'data-hover-id': sc.id, class: 'sc-dot' },
     });
@@ -511,9 +534,9 @@ function buildPlot(scale, ctx, opts = {}) {
         x: lx + 11 * fs, y: ly - 8 * fs,
         'font-size': isSelected ? bodyLabelSize + 1 : bodyLabelSize,
         'font-weight': isSelected ? 700 : 600,
-        fill: 'oklch(0.14 0.01 260)',
+        fill: theme.ink,
         'paint-order': 'stroke',
-        stroke: '#ffffff', 'stroke-width': 4, 'stroke-linejoin': 'round',
+        stroke: theme.halo, 'stroke-width': 4, 'stroke-linejoin': 'round',
       }, sc.name));
     }
   }
@@ -521,7 +544,7 @@ function buildPlot(scale, ctx, opts = {}) {
   // --- Title bar
   svg.appendChild(el('text', {
     x: PAD_L, y: titleSize + 12,
-    'font-size': titleSize, 'font-weight': 800, fill: 'oklch(0.12 0.01 260)',
+    'font-size': titleSize, 'font-weight': 800, fill: theme.ink,
     'letter-spacing': '-0.01em',
   }, scale.name));
 
@@ -529,13 +552,13 @@ function buildPlot(scale, ctx, opts = {}) {
     x: PAD_L, y: titleSize + planeSize + 18,
     'font-family': "'JetBrains Mono', ui-monospace, monospace",
     'font-size': planeSize, 'font-weight': 700,
-    'letter-spacing': '0.12em', fill: 'oklch(0.40 0.01 260)',
+    'letter-spacing': '0.12em', fill: theme.ink3,
   }, `${scale.plane.toUpperCase()} PLANE`));
 
   svg.appendChild(el('text', {
     x: W - PAD_R, y: titleSize + 12,
     'font-family': "'JetBrains Mono', ui-monospace, monospace",
-    'font-size': badgeSize, 'font-weight': 700, 'text-anchor': 'end', fill: 'oklch(0.26 0.01 260)',
+    'font-size': badgeSize, 'font-weight': 700, 'text-anchor': 'end', fill: theme.ink2,
   }, `± ${scale.halfWidth} ${unitLabel}`));
 
   // Date range annotation (same mono styling family as subplot meta labels).
@@ -553,7 +576,7 @@ function buildPlot(scale, ctx, opts = {}) {
         x: W - PAD_R, y: titleSize + planeSize + 18,
         'font-family': "'JetBrains Mono', ui-monospace, monospace",
         'font-size': planeSize * 0.92, 'font-weight': 700, 'text-anchor': 'end',
-        'letter-spacing': '0.03em', fill: 'oklch(0.40 0.01 260)',
+        'letter-spacing': '0.03em', fill: theme.ink3,
       }, `${startLabel} → ${endLabel} UTC`));
     }
   }
@@ -570,15 +593,15 @@ function buildPlot(scale, ctx, opts = {}) {
     const niceBarLen = niceBarVal * unitKm * pxPerKmX;
     const bx = PAD_L + 14, by = PAD_T + plotH - 16;
     const bg = el('g');
-    bg.appendChild(el('line', { x1: bx, y1: by, x2: bx + niceBarLen, y2: by, stroke: 'oklch(0.12 0.01 260)', 'stroke-width': 2.6 }));
-    bg.appendChild(el('line', { x1: bx, y1: by - 4, x2: bx, y2: by + 4, stroke: 'oklch(0.12 0.01 260)', 'stroke-width': 2.6 }));
-    bg.appendChild(el('line', { x1: bx + niceBarLen, y1: by - 4, x2: bx + niceBarLen, y2: by + 4, stroke: 'oklch(0.12 0.01 260)', 'stroke-width': 2.6 }));
+    bg.appendChild(el('line', { x1: bx, y1: by, x2: bx + niceBarLen, y2: by, stroke: theme.ink, 'stroke-width': 2.6 }));
+    bg.appendChild(el('line', { x1: bx, y1: by - 4, x2: bx, y2: by + 4, stroke: theme.ink, 'stroke-width': 2.6 }));
+    bg.appendChild(el('line', { x1: bx + niceBarLen, y1: by - 4, x2: bx + niceBarLen, y2: by + 4, stroke: theme.ink, 'stroke-width': 2.6 }));
     bg.appendChild(el('text', {
       x: bx + niceBarLen / 2, y: by - 9,
       'text-anchor': 'middle',
       'font-family': "'JetBrains Mono', ui-monospace, monospace",
-      'font-size': tickSize, 'font-weight': 700, fill: 'oklch(0.12 0.01 260)',
-      'paint-order': 'stroke', stroke: '#fff', 'stroke-width': 3.5, 'stroke-linejoin': 'round',
+      'font-size': tickSize, 'font-weight': 700, fill: theme.ink,
+      'paint-order': 'stroke', stroke: theme.halo, 'stroke-width': 3.5, 'stroke-linejoin': 'round',
     }, `${niceBarVal < 1 ? niceBarVal.toFixed(2) : niceBarVal} ${unitLabel}`));
     svg.appendChild(bg);
   }
@@ -592,15 +615,15 @@ function buildPlot(scale, ctx, opts = {}) {
       x: W + 4, y: PAD_T,
       width: legendW - 10,
       height: plotH,
-      fill: '#ffffff',
-      stroke: 'oklch(0.88 0.005 260)',
+      fill: theme.paper,
+      stroke: theme.rule,
       'stroke-width': 1,
       rx: 4,
     }));
     svg.appendChild(el('text', {
       x: lx0 + 6, y: PAD_T + legendTextSize + 4,
       'font-size': legendTextSize * 0.85, 'font-weight': 700,
-      'letter-spacing': '0.08em', fill: 'oklch(0.35 0.01 260)',
+      'letter-spacing': '0.08em', fill: theme.ink3,
     }, 'SPACECRAFT'));
     // Items
     const maxRows = Math.floor((plotH - legendTextSize * 2 - 16) / rowH);
@@ -609,18 +632,18 @@ function buildPlot(scale, ctx, opts = {}) {
     shown.forEach((r, i) => {
       const y = startY + i * rowH;
       const sym = drawSymbol(r.sc.symbol || 'circle', lx0 + 18, y, 6.5 * fs, {
-        fill: r.color, stroke: '#fff', strokeWidth: 1.4,
+        fill: r.color, stroke: theme.paper, strokeWidth: 1.4,
       });
       svg.appendChild(sym);
       svg.appendChild(el('text', {
         x: lx0 + 36, y: y + legendTextSize * 0.36,
-        'font-size': legendTextSize, 'font-weight': 600, fill: 'oklch(0.16 0.01 260)',
+        'font-size': legendTextSize, 'font-weight': 600, fill: theme.ink,
       }, r.sc.name));
     });
     if (renderedLegend.length > shown.length) {
       svg.appendChild(el('text', {
         x: lx0 + 6, y: startY + shown.length * rowH + legendTextSize,
-        'font-size': legendTextSize * 0.85, 'font-style': 'italic', fill: 'oklch(0.45 0.01 260)',
+        'font-size': legendTextSize * 0.85, 'font-style': 'italic', fill: theme.ink3,
       }, `+${renderedLegend.length - shown.length} more…`));
     }
   }
@@ -706,6 +729,7 @@ function build3DTraces(scale, ctx) {
 }
 
 function build3DFallbackCanvas(host, scale, ctx) {
+  const theme = plotTheme();
   host.innerHTML = '';
   const canvas = document.createElement('canvas');
   const rect = host.getBoundingClientRect();
@@ -718,7 +742,7 @@ function build3DFallbackCanvas(host, scale, ctx) {
   canvas.style.height = `${h}px`;
   canvas.style.display = 'block';
   canvas.style.margin = '0 auto';
-  canvas.style.background = '#fff';
+  canvas.style.background = theme.plotBg;
   host.appendChild(canvas);
   const g = canvas.getContext('2d');
   if (!g) return () => {};
@@ -813,7 +837,7 @@ function build3DFallbackCanvas(host, scale, ctx) {
       [4,5],[5,6],[6,7],[7,4],
       [0,4],[1,5],[2,6],[3,7],
     ];
-    g.strokeStyle = 'rgba(120,130,145,0.28)';
+    g.strokeStyle = theme.dark ? 'rgba(145,160,185,0.24)' : 'rgba(120,130,145,0.28)';
     g.lineWidth = 1;
     for (const [a, b] of edges) {
       g.beginPath();
@@ -825,7 +849,7 @@ function build3DFallbackCanvas(host, scale, ctx) {
 
   const drawGrid = () => {
     const steps = [-0.75, -0.5, -0.25, 0.25, 0.5, 0.75].map((m) => m * half);
-    g.strokeStyle = 'rgba(140,150,165,0.16)';
+    g.strokeStyle = theme.dark ? 'rgba(145,160,185,0.16)' : 'rgba(140,150,165,0.16)';
     g.lineWidth = 1;
     for (const v of steps) {
       const x1 = proj(rot({ x: -half, y: v, z: 0 }));
@@ -840,12 +864,12 @@ function build3DFallbackCanvas(host, scale, ctx) {
   const draw = () => {
     g.clearRect(0, 0, w, h);
     const bg = g.createLinearGradient(0, 0, 0, h);
-    bg.addColorStop(0, '#fcfcfd');
-    bg.addColorStop(1, '#f3f5f8');
+    bg.addColorStop(0, theme.dark ? '#111827' : '#fcfcfd');
+    bg.addColorStop(1, theme.dark ? '#0f1420' : '#f3f5f8');
     g.fillStyle = bg;
     g.fillRect(0, 0, w, h);
 
-    g.strokeStyle = '#d4d9e1';
+    g.strokeStyle = theme.rule;
     g.lineWidth = 1;
     g.strokeRect(0.5, 0.5, w - 1, h - 1);
 
@@ -982,11 +1006,11 @@ function build3DFallbackCanvas(host, scale, ctx) {
         g.beginPath();
         g.arc(pp.sx, pp.sy, s.selected ? 5 : 3.4, 0, Math.PI * 2);
         g.fill();
-        g.strokeStyle = '#ffffff';
+        g.strokeStyle = theme.paper;
         g.lineWidth = 1.3;
         g.stroke();
         if (ctx.showLabels || s.selected) {
-          g.fillStyle = '#1f2937';
+          g.fillStyle = theme.ink;
           g.font = s.selected ? '700 12px Inter Tight, sans-serif' : '600 11px Inter Tight, sans-serif';
           g.fillText(s.name, pp.sx + 8, pp.sy - 8);
         }
@@ -1001,7 +1025,7 @@ function build3DFallbackCanvas(host, scale, ctx) {
       g.beginPath();
       g.arc(earth.sx, earth.sy, 6, 0, Math.PI * 2);
       g.fill();
-      g.strokeStyle = '#fff';
+      g.strokeStyle = theme.paper;
       g.lineWidth = 1.5;
       g.stroke();
       g.fillStyle = '#183a7a';
@@ -1015,7 +1039,7 @@ function build3DFallbackCanvas(host, scale, ctx) {
       g.beginPath();
       g.arc(sun.sx, sun.sy, 7, 0, Math.PI * 2);
       g.fill();
-      g.strokeStyle = '#fff';
+      g.strokeStyle = theme.paper;
       g.lineWidth = 1.5;
       g.stroke();
       g.fillStyle = '#92400e';
@@ -1026,8 +1050,8 @@ function build3DFallbackCanvas(host, scale, ctx) {
     if (scale.id === 'l1' || ctx.showL1L2) {
       const l1 = proj(rot(pointFromKm(L1_KM, 0, 0)));
       if (isOnScreen(l1)) {
-        g.fillStyle = '#fff';
-        g.strokeStyle = '#0f172a';
+        g.fillStyle = theme.paper;
+        g.strokeStyle = theme.ink;
         g.lineWidth = 1.4;
         g.beginPath();
         g.moveTo(l1.sx, l1.sy - 7);
@@ -1037,7 +1061,7 @@ function build3DFallbackCanvas(host, scale, ctx) {
         g.closePath();
         g.fill();
         g.stroke();
-        g.fillStyle = '#111827';
+        g.fillStyle = theme.ink;
         g.font = '700 10px Inter Tight, sans-serif';
         g.fillText('L1', l1.sx + 9, l1.sy - 8);
       }
@@ -1049,19 +1073,19 @@ function build3DFallbackCanvas(host, scale, ctx) {
       g.beginPath();
       g.arc(pp.sx, pp.sy, 4.5, 0, Math.PI * 2);
       g.fill();
-      g.strokeStyle = '#fff';
+      g.strokeStyle = theme.paper;
       g.lineWidth = 1.2;
       g.stroke();
-      g.fillStyle = '#374151';
+      g.fillStyle = theme.ink2;
       g.font = '600 10px Inter Tight, sans-serif';
       g.fillText(pl.name, pp.sx + 7, pp.sy - 6);
     }
 
-    g.fillStyle = '#1f2937';
+    g.fillStyle = theme.ink;
     g.font = '700 13px Inter Tight, sans-serif';
     g.fillText(`${scale.name} · XYZ`, 12, 20);
     g.font = '500 11px Inter Tight, sans-serif';
-    g.fillStyle = '#6b7280';
+    g.fillStyle = theme.ink3;
     g.fillText('Drag to rotate · Wheel to zoom · Double-click to reset', 12, 38);
     g.fillText(`Axes in ${unitLabel} · centered on ${scale.id === 'l1' ? 'L1' : scale.id === 'system' ? 'Sun–Earth midpoint' : 'Earth'}`, 12, 54);
 
@@ -1071,15 +1095,15 @@ function build3DFallbackCanvas(host, scale, ctx) {
       const lx = w - 220;
       const geoRows = (canDrawGeoSurfaces && (ctx.showBS || ctx.showMP)) ? 1 : 0;
       const lh = 20 + legend.length * 16 + (geoRows ? 18 : 0);
-      g.fillStyle = 'rgba(255,255,255,0.87)';
-      g.strokeStyle = 'rgba(170,180,195,0.45)';
+      g.fillStyle = theme.legendBg;
+      g.strokeStyle = theme.rule;
       g.lineWidth = 1;
       g.beginPath();
       if (typeof g.roundRect === 'function') g.roundRect(lx, 10, 205, lh, 6);
       else g.rect(lx, 10, 205, lh);
       g.fill();
       g.stroke();
-      g.fillStyle = '#4b5563';
+      g.fillStyle = theme.ink3;
       g.font = '700 10px Inter Tight, sans-serif';
       g.fillText('SPACECRAFT', lx + 10, 24);
       legend.forEach((s, i) => {
@@ -1088,7 +1112,7 @@ function build3DFallbackCanvas(host, scale, ctx) {
         g.beginPath();
         g.arc(lx + 12, y, 3.5, 0, Math.PI * 2);
         g.fill();
-        g.fillStyle = '#1f2937';
+        g.fillStyle = theme.ink;
         g.font = s.selected ? '700 10px Inter Tight, sans-serif' : '500 10px Inter Tight, sans-serif';
         g.fillText(s.name, lx + 22, y + 3.5);
       });
@@ -1108,11 +1132,11 @@ function build3DFallbackCanvas(host, scale, ctx) {
           g.lineTo(lx + 40, y);
           g.stroke();
           g.setLineDash([]);
-          g.fillStyle = '#1f2937';
+          g.fillStyle = theme.ink;
           g.font = '500 10px Inter Tight, sans-serif';
           g.fillText('MP / BS', lx + 48, y + 3.5);
         } else {
-          g.fillStyle = '#1f2937';
+          g.fillStyle = theme.ink;
           g.font = '500 10px Inter Tight, sans-serif';
           g.fillText('Magnetopause', lx + 24, y + 3.5);
         }
