@@ -56,6 +56,13 @@ function getInitialTheme() {
   return 'light';
 }
 
+function applyThemeToDocument(nextTheme) {
+  document.documentElement.setAttribute('data-scviewer-theme', nextTheme);
+  try {
+    window.localStorage?.setItem('scviewer-theme', nextTheme);
+  } catch (_) {}
+}
+
 function App() {
   const [theme, setTheme] = React.useState(getInitialTheme);
   const [startISO, setStartISO] = React.useState('2025-12-01T00:00:00.000Z');
@@ -98,12 +105,19 @@ function App() {
   const [tracksError, setTracksError] = React.useState(null);
   const [downloadingYear, setDownloadingYear] = React.useState(false);
 
-  React.useEffect(() => {
-    document.documentElement.setAttribute('data-scviewer-theme', theme);
-    try {
-      window.localStorage?.setItem('scviewer-theme', theme);
-    } catch (_) {}
+  React.useLayoutEffect(() => {
+    applyThemeToDocument(theme);
   }, [theme]);
+
+  const toggleTheme = React.useCallback(() => {
+    setTheme((value) => {
+      const next = value === 'dark' ? 'light' : 'dark';
+      // Plot SVG/canvas renderers read the theme from documentElement.
+      // Apply it synchronously so the same React render produces fresh plot colors.
+      applyThemeToDocument(next);
+      return next;
+    });
+  }, []);
 
   const durationDays = (new Date(endISO).getTime() - new Date(startISO).getTime()) / ONE_DAY_MS;
   const selectedList = React.useMemo(() => APP_CATALOG.filter(s => selectedIds.has(s.id)), [selectedIds]);
@@ -284,6 +298,7 @@ function App() {
     planets: APP_PLANETS,
     planetTracks,
     moonTrack,
+    theme,
     frame,
     ...flags,
     hoveredId,
@@ -518,7 +533,7 @@ function App() {
         </div>
         <button
           className="theme-toggle"
-          onClick={() => setTheme((value) => value === 'dark' ? 'light' : 'dark')}
+          onClick={toggleTheme}
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
           aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
@@ -707,7 +722,7 @@ function ThreeDPanel({ scales, selectedScaleId, onScaleChange, ctx }) {
     return () => {
       if (typeof teardown === 'function') teardown();
     };
-  }, [selectedScaleId, ctx.selected, ctx.tracks, ctx.planetTracks, ctx.moonTrack, ctx.showPlanets, ctx.showMoon, ctx.showBS, ctx.showMP, ctx.showLabels, ctx.showL1L2, ctx.selectedScId]);
+  }, [selectedScaleId, ctx.selected, ctx.tracks, ctx.planetTracks, ctx.moonTrack, ctx.theme, ctx.showPlanets, ctx.showMoon, ctx.showBS, ctx.showMP, ctx.showLabels, ctx.showL1L2, ctx.selectedScId]);
 
   React.useEffect(() => {
     const onFs = () => setIsMaximized(document.fullscreenElement === shellRef.current);
