@@ -1,6 +1,6 @@
 <div class="col">
-  <a href="{% if project.redirect %}{{ project.redirect }}{% else %}{{ project.url | relative_url }}{% endif %}">
-    <div class="card h-100 hoverable">
+  <div class="card h-100 hoverable">
+    <a class="project-card-main" href="{% if project.redirect %}{{ project.redirect }}{% else %}{{ project.url | relative_url }}{% endif %}">
       {% if project.img %}
         {%
           include figure.liquid
@@ -14,22 +14,38 @@
       <div class="card-body">
         <h2 class="card-title">{{ project.title }}</h2>
         <p class="card-text">{{ project.description }}</p>
-        <div class="row ml-1 mr-1 p-0">
-          {% if project.github %}
-            <div class="github-icon">
-              <div class="icon" data-toggle="tooltip" title="Code Repository">
-                <a href="{{ project.github }}"><i class="fa-brands fa-github gh-icon"></i></a>
-              </div>
-              {% if project.github_stars %}
-                <span class="stars" data-toggle="tooltip" title="GitHub Stars">
-                  <i class="fa-solid fa-star"></i>
-                  <span id="{{ project.github_stars }}-stars"></span>
-                </span>
-              {% endif %}
-            </div>
-          {% endif %}
-        </div>
       </div>
-    </div>
-  </a>
+    </a>
+    {% if project.website or project.dashboard or project.github %}
+      <div class="project-links row ml-1 mr-1 p-0">
+        {% if project.website %}
+          <div class="project-link-icon">
+            <div class="icon" data-toggle="tooltip" title="Project Website">
+              <a href="{{ project.website }}" aria-label="{{ project.title }} website"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+            </div>
+          </div>
+        {% endif %}
+        {% if project.dashboard %}
+          <div class="project-link-icon">
+            <div class="icon" data-toggle="tooltip" title="Open Dashboard">
+              <a href="{{ project.dashboard | relative_url }}" aria-label="{{ project.title }} dashboard"><i class="fa-solid fa-chart-line"></i></a>
+            </div>
+          </div>
+        {% endif %}
+        {% if project.github %}
+          <div class="github-icon">
+            <div class="icon" data-toggle="tooltip" title="Code Repository">
+              <a href="{{ project.github }}" aria-label="{{ project.title }} GitHub repository"><i class="fa-brands fa-github gh-icon"></i></a>
+            </div>
+            {% if project.github_stars %}
+              <span class="stars" data-toggle="tooltip" title="GitHub Stars">
+                <i class="fa-solid fa-star"></i>
+                <span id="{{ project.github_stars }}-stars"></span>
+              </span>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
 </div>

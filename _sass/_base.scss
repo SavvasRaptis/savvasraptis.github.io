@@ -169,6 +169,56 @@ ul.task-list input[type="checkbox"] {
 .card {
   background-color: var(--global-card-bg-color);
 
+  .project-card-main {
+    color: inherit;
+    display: block;
+    flex: 1 1 auto;
+    text-decoration: none;
+  }
+
+  .project-card-main:hover {
+    text-decoration: none;
+  }
+
+  .project-links {
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+    margin-top: -0.35rem;
+    padding-left: 1.25rem !important;
+  }
+
+  .project-link-icon,
+  .github-icon {
+    align-items: center;
+    display: inline-flex;
+  }
+
+  .project-link-icon .icon,
+  .github-icon .icon {
+    align-items: center;
+    border: 1px solid var(--global-divider-color);
+    border-radius: 999px;
+    display: inline-flex;
+    height: 2rem;
+    justify-content: center;
+    width: 2rem;
+  }
+
+  .project-link-icon a,
+  .github-icon a {
+    color: var(--global-text-color-light);
+  }
+
+  .project-link-icon .icon:hover,
+  .github-icon .icon:hover {
+    border-color: var(--global-theme-color);
+  }
+
+  .project-link-icon .icon:hover a,
+  .github-icon .icon:hover a {
+    color: var(--global-theme-color);
+  }
+
   .card-img {
     width: 100%;
     padding-top: 1.25rem;

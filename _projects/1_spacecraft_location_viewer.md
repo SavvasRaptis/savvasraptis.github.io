@@ -4,6 +4,8 @@ title: Spacecraft Location Viewer
 description: Interactive dashboard for heliophysics and magnetospheric spacecraft trajectories.
 importance: 1
 permalink: /projects/spacecraft-location-viewer/
+dashboard: /scviewer-ui/heliospheric-locator.html
+github: https://github.com/SavvasRaptis/scviewer-ui
 ---
 
 This dashboard shows spacecraft trajectories and positions for heliospheric missions.

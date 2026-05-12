@@ -279,6 +279,7 @@ body.sticky-bottom-footer {
 }
 
 .selected-paper-title {
+  color: var(--global-text-color);
   font-size: 0.98rem;
   line-height: 1.33;
   margin: 0;
@@ -292,11 +293,11 @@ body.sticky-bottom-footer {
 }
 
 .selected-paper-authors .selected-author-other {
-  color: #fff;
+  color: var(--global-text-color-light);
 }
 
 .selected-paper-authors .selected-author-self {
-  color: #fff;
+  color: var(--global-text-color);
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.12rem;
