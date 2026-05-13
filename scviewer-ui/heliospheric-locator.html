@@ -31,7 +31,7 @@
       const _dataFromQuery = new URLSearchParams(window.location.search).get('data');
       const _isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
       const _prodDefaultApi = 'https://scviewer-api.onrender.com';
-      const _prodDefaultData = 'https://raw.githubusercontent.com/SavvasRaptis/scviewer-data/ff6cbb92fd363082b62fa13139cb7543d6d11e82';
+      const _prodDefaultData = 'https://raw.githubusercontent.com/SavvasRaptis/scviewer-data/e2920afca8abfe7b5d3b83b8d151706f265ef287';
       window.SC_API_BASE = window.SC_API_BASE || _apiFromQuery || (_isLocalHost ? 'http://localhost:8000' : _prodDefaultApi);
       window.SC_DATA_BASE = window.SC_DATA_BASE || _dataFromQuery || (_isLocalHost ? '' : _prodDefaultData);
       window.SC_DATA_MANIFEST_PATH = window.SC_DATA_MANIFEST_PATH || '/scdata/manifest.json';
