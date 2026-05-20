@@ -2,6 +2,12 @@
 permalink: /robots.txt
 ---
 User-agent: *
-Disallow:
+
+# Keep crawlers focused on the public site pages. These folders contain
+# generated notebooks, teaching demos, and standalone assets that can be
+# several MB each and are not useful search landing pages.
+Disallow: /files/html/
+Disallow: /assets/html/
+Disallow: /assets/plotly/
 
 Sitemap: {{ site.baseurl | prepend: site.url }}/sitemap.xml
