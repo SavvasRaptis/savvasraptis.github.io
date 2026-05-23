@@ -91,15 +91,10 @@
     }
   }
 
-  function rowMatches(row) {
-    const rowYear = row.dataset.year || "";
+  function rowMatchesCurrentNonYearFilters(row) {
     const rowFirstAuthor = row.dataset.firstAuthor === "true";
     const title = row.dataset.title || "";
     const authors = row.dataset.authors || "";
-
-    if (state.year !== "all" && rowYear !== state.year) {
-      return false;
-    }
 
     if (state.chip === "first-author" && !rowFirstAuthor) {
       return false;
@@ -110,6 +105,20 @@
       if (!haystack.includes(state.query)) {
         return false;
       }
+    }
+
+    return true;
+  }
+
+  function rowMatches(row) {
+    const rowYear = row.dataset.year || "";
+
+    if (!rowMatchesCurrentNonYearFilters(row)) {
+      return false;
+    }
+
+    if (state.year !== "all" && rowYear !== state.year) {
+      return false;
     }
 
     return true;
@@ -129,6 +138,17 @@
   }
 
   function applyFilters() {
+    const countableRows = publicationRows.filter(rowMatchesCurrentNonYearFilters);
+    const counts = yearCounts(countableRows);
+    const years = sortedYears(counts);
+
+    if (state.year !== "all" && !years.includes(state.year)) {
+      state.year = "all";
+      updateHash("all");
+    }
+
+    renderYearLinks(years, counts, countableRows.length);
+
     let visibleCount = 0;
 
     publicationRows.forEach((row) => {
@@ -255,9 +275,7 @@
     });
   }
 
-  const counts = yearCounts(publicationRows);
-  const years = sortedYears(counts);
-  renderYearLinks(years, counts, publicationRows.length);
+  const years = sortedYears(yearCounts(publicationRows));
 
   const hashYear = parseYearFromHash(window.location.hash);
   if (hashYear !== "all" && years.includes(hashYear)) {
