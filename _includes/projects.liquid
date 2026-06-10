@@ -16,7 +16,7 @@
         <p class="card-text">{{ project.description }}</p>
       </div>
     </a>
-    {% if project.website or project.dashboard or project.github %}
+    {% if project.website or project.dashboard or project.github or project.youtube or project.nasa %}
       <div class="project-links row ml-1 mr-1 p-0">
         {% if project.website %}
           <div class="project-link-icon">
@@ -43,6 +43,20 @@
                 <span id="{{ project.github_stars }}-stars"></span>
               </span>
             {% endif %}
+          </div>
+        {% endif %}
+        {% if project.youtube %}
+          <div class="project-link-icon">
+            <div class="icon" data-toggle="tooltip" title="YouTube Videos">
+              <a href="{{ project.youtube }}" aria-label="{{ project.title }} YouTube videos"><i class="fa-brands fa-youtube"></i></a>
+            </div>
+          </div>
+        {% endif %}
+        {% if project.nasa %}
+          <div class="project-link-icon">
+            <div class="icon" data-toggle="tooltip" title="NASA Information">
+              <a href="{{ project.nasa }}" aria-label="{{ project.title }} NASA information"><i class="fa-solid fa-rocket"></i></a>
+            </div>
           </div>
         {% endif %}
       </div>
