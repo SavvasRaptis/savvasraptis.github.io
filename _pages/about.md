@@ -27,7 +27,7 @@ latest_posts:
   limit: 0
 ---
 
-I am a senior research scientist in space plasma physics at the Johns Hopkins University Applied Physics Laboratory, focusing on experimental heliophysics, statistical modeling, and spacecraft data analysis.
+I am a researcher in space plasma physics at the Johns Hopkins University Applied Physics Laboratory, focusing on experimental heliophysics, statistical modeling, and spacecraft data analysis.
 
 My research focuses on key areas of heliophysics, astrophysics, and plasma physics, including collisionless shock dynamics, particle acceleration, space weather, and localized transient processes at Earth's geospace and at other planetary environments.
 
