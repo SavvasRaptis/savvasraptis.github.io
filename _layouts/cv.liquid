@@ -7,7 +7,6 @@ layout: default
       {{ page.title }}
       {% if page.cv_pdf %}
         <span class="float-right cv-pdf-access">
-          <span class="cv-pdf-label">Full CV PDF</span>
           <a
             {% if page.cv_pdf contains '://' %}
               href="{{ page.cv_pdf }}"
@@ -21,6 +20,7 @@ layout: default
             title="Open full CV PDF"
           >
             <i class="fa-solid fa-file-pdf"></i>
+            <span>Full CV PDF</span>
           </a>
         </span>
       {% endif %}

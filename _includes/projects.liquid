@@ -14,6 +14,9 @@
       <div class="card-body">
         <h2 class="card-title">{{ project.title }}</h2>
         <p class="card-text">{{ project.description }}</p>
+        {% if project.status %}
+          <p class="project-status"><i class="fa-solid fa-circle-info"></i> {{ project.status }}</p>
+        {% endif %}
       </div>
     </a>
     {% if project.website or project.dashboard or project.github or project.youtube or project.nasa %}

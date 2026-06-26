@@ -11,6 +11,9 @@
           <div class="card-body">
             <h3 class="card-title">{{ project.title }}</h3>
             <p class="card-text">{{ project.description }}</p>
+            {% if project.status %}
+              <p class="project-status"><i class="fa-solid fa-circle-info"></i> {{ project.status }}</p>
+            {% endif %}
           </div>
         </div>
       </div>

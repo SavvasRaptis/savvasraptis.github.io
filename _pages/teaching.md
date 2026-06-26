@@ -4,7 +4,7 @@ permalink: /teaching/
 title: teaching
 description: Courses taught, guest lectures, and training material.
 nav: true
-nav_order: 5
+nav_order: 6
 ---
 
 ## KTH Royal Institute of Technology

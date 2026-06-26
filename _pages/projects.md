@@ -4,7 +4,7 @@ title: side projects
 permalink: /projects/
 description: Research-adjacent tools, packages, and community initiatives.
 nav: true
-nav_order: 6
+nav_order: 7
 horizontal: false
 ---
 

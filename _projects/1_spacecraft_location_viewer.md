@@ -6,9 +6,12 @@ importance: 1
 permalink: /projects/spacecraft-location-viewer/
 dashboard: /scviewer-ui/heliospheric-locator.html
 github: https://github.com/SavvasRaptis/scviewer-ui
+status: Pending Intellectual Property (IP) approval
 ---
 
 This dashboard shows spacecraft trajectories and positions for heliospheric missions.
+
+**Status:** Pending Intellectual Property (IP) approval before public dashboard release.
 
 - Providers: JPL Horizons + SSCWeb (THEMIS/Cluster/Geotail + GOES/Arase/RBSP)
 - Technical repositories:

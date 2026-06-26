@@ -10,4 +10,4 @@ toc:
   sidebar: left
 ---
 
-The full CV is available as a PDF via the file icon at the top-right of this page.
+Use the **Full CV PDF** button at the top-right for the complete PDF version.

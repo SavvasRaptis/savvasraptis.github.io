@@ -2,7 +2,7 @@
 layout: page
 title: posts
 permalink: /posts/
-nav: true
+nav: false
 nav_order: 7
 ---
 

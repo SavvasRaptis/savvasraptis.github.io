@@ -628,54 +628,45 @@ body.sticky-bottom-footer {
 .cv-pdf-access {
   align-items: center;
   display: inline-flex;
-  gap: 0.45rem;
-}
-
-.cv-pdf-label {
-  color: var(--global-text-color-light);
-  display: inline-flex;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.015em;
-  line-height: 1;
-  text-transform: uppercase;
-  transform: translateY(0.06rem);
 }
 
 .cv-pdf-icon-link {
   align-items: center;
-  border: 1px solid var(--global-divider-color);
+  background: var(--global-theme-color);
+  border: 1px solid var(--global-theme-color);
   border-radius: 999px;
-  color: var(--global-text-color-light);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  color: var(--global-hover-text-color);
   display: inline-flex;
-  height: 2.05rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  gap: 0.45rem;
+  min-height: 2.25rem;
   justify-content: center;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 0.55rem 0.8rem;
   text-decoration: none;
-  width: 2.05rem;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .cv-pdf-icon-link i {
-  font-size: 1.00rem;
+  font-size: 1rem;
 }
 
 .cv-pdf-icon-link:hover {
+  background: transparent;
   border-color: var(--global-theme-color);
   color: var(--global-theme-color);
   text-decoration: none;
 }
 
 @media (max-width: 576px) {
-  .cv-pdf-access {
-    gap: 0.35rem;
-  }
-
-  .cv-pdf-label {
-    font-size: 0.66rem;
-  }
-
   .cv-pdf-icon-link {
-    height: 1.84rem;
-    width: 1.84rem;
+    font-size: 0.72rem;
+    min-height: 2rem;
+    padding: 0.45rem 0.65rem;
   }
 }
 
