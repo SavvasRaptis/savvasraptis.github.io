@@ -9,5 +9,4 @@ date: '2022-08-19'
 location: Johns Hopkins University Applied Physics Laboratory, Online, Virtual
 abstract: "/files/seminars/2022/jets-apl-jhu-seminar-abstract.pdf"
 paperurl: "/files/seminars/2022/jets-apl-jhu-seminar-talk.pdf"
-ppt: "/files/seminars/2022/jets-apl-jhu-seminar-talk.pptx"
 ---
