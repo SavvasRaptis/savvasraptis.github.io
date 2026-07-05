@@ -1279,7 +1279,7 @@ nav[data-toggle="toc"] {
   display: grid;
   gap: 1.1rem;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: auto auto auto 1fr;
+  grid-template-rows: auto auto auto auto;
   margin-bottom: 1.5rem;
   align-items: stretch;
 }
@@ -1296,7 +1296,7 @@ nav[data-toggle="toc"] {
 
 .research-card {
   display: grid;
-  grid-template-rows: auto minmax(4.15rem, auto) minmax(8.5rem, auto) 1fr;
+  grid-template-rows: auto minmax(4.4rem, auto) minmax(6.6rem, auto) auto;
   grid-row: span 4;
   min-height: 100%;
   padding: 1.45rem;
@@ -1340,7 +1340,7 @@ nav[data-toggle="toc"] {
   display: grid;
   gap: 0.65rem;
   padding-top: 1.05rem;
-  align-self: start;
+  align-self: stretch;
 }
 
 .research-paper-heading {

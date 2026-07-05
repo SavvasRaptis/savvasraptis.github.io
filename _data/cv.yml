@@ -4,21 +4,21 @@
     - name: Full Name
       value: Savvas Raptis
     - name: Current Role
-      value: Researcher, Space Exploration Sector, Johns Hopkins University Applied Physics Laboratory
+      value: Senior Professional Staff, Space Exploration Sector, Johns Hopkins University Applied Physics Laboratory
     - name: Location
       value: Maryland, USA
     - name: Research Areas
-      value: heliophysics, appied ML/AI, space plasma physics and space weather
+      value: heliophysics, applied ML/AI, space plasma physics and space weather
 
 - title: Research Appointments
   type: time_table
   contents:
-    - title: Senior Research Scientist
+    - title: Senior Professional Staff
       institution: Johns Hopkins University Applied Physics Laboratory, Laurel, Maryland, USA
       year: Mar 2026 - Present
-    - title: Associate Research Scientist
+    - title: Associate Professional Staff II
       institution: Johns Hopkins University Applied Physics Laboratory, Laurel, Maryland, USA
-      year: Jun 2023 - Mar 2026
+      year: Jun 2023 - Feb 2026
     - title: Visiting Researcher
       institution: European Space Agency (ESA-ESTEC), Leiden, Netherlands
       year: Jan 2023 - Apr 2023
@@ -51,10 +51,13 @@
 - title: Leadership and Supervision
   type: list
   contents:
-    - "2025-2029: NSF GEM Focus Group Leader (Multiscale Dayside Transients and their effect on Earth's magnetosphere)."
+    - "2025-Present: IMAP Science Team member and NASA CGS Magnetosphere Data Analysis Working Group lead."
+    - "2025-2029: NSF GEM Focus Group Leader for Multiscale Dayside Transients and their effect on Earth's magnetosphere."
     - "2025-Present: Chair, AGU SPA Early Career Leadership Advisory Committee (EC-LAC)."
-    - "2023-Present: Organizer/convener/chair roles across AGU, EGU, MMS community workshop, and LMAG workshops."
-    - "Mentoring and co-supervision activities at AGU, GEM, EGU, JHU/APL internship programs, co-supervision of graduent students."
+    - "2025-Present: Plasma Observatory science consortium contributor and science multi-point working-group contributor."
+    - "2023-Present: SMILE Science Working Team and Modeling Working Group member; MMS Science Working Team and EPD team member."
+    - "Lead organizer for LMAG25 and primary convener/chair roles across AGU collisionless-shocks sessions."
+    - "Mentoring and co-supervision activities through AGU, GEM, EGU, JHU/APL internships, and graduate-student co-supervision."
 
 - title: Service and Reviewing
   type: list
