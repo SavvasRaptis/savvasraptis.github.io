@@ -33,7 +33,7 @@ Extended information with a short syllabus and role descriptions for each course
 
 The guest lecture topics include:
 
-- Applied Machine Learning in Heliophysics: 1 hour theory + 1 hour hands-on applications
+- [Applied Machine Learning in Heliophysics](https://savvasraptis.github.io/helio-data-methods/)
 - Multi-Spacecraft Techniques and Collisionless Shocks: 2 hours theory + 2 hours hands-on applications, including assignments
 
 A PDF copy of my teaching experience is available here:
