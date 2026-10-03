@@ -68,6 +68,8 @@ nav_order: 2
   <section class="publications-main">
     <div class="publications" id="publications-list">
       {% bibliography %}
+      <h2 class="bibliography" id="other-publications">Other Publications</h2>
+      {% bibliography --file other_publications --group_by none %}
     </div>
   </section>
 </div>

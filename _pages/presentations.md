@@ -150,6 +150,9 @@ nav_order: 3
                   {% if talk.location %}{{ talk.location }} | {% endif %}{{ talk.date | date: '%d %b %Y' }}
                 </p>
                 <div class="talk-links">
+                  {% if talk.course %}
+                    <a class="talk-link" href="{{ talk.course }}" target="_blank" rel="noopener noreferrer">Course</a>
+                  {% endif %}
                   {% if show_abstract %}
                     {% if abstract_url contains '://' %}
                       <a class="talk-link" href="{{ abstract_url | replace: ' ', '%20' }}" target="_blank" rel="noopener noreferrer">Abstract</a>

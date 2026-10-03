@@ -6,7 +6,7 @@ type: Oral presentation
 permalink: "/talks/2026-06-23-talk-MMS_SWT_meeting"
 venue: Magnetospheric Multiscale (MMS) Science Working Team (SWT) Meeting
 date: '2026-06-23'
-location: Online
+location: Embry-Riddle Aeronautical University, Daytona Beach, Florida, USA
 paperurl: "/files/presentations/2026/MMS_SWT_meeting_june.pdf"
 ppt: "/files/presentations/2026/MMS_SWT_meeting_june.pptx"
 ---

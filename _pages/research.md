@@ -153,6 +153,10 @@ nav_order: 5
     <p>
       A broader record of papers, invited talks, conference presentations, and community-facing projects is available
       through the publication, presentation, and side-project pages.
+      Recent examples include
+      <a href="{{ '/publications/#Toy_Edens_2026shock_detectives' | relative_url }}">Shock Detectives: citizen-science classification of MMS observations</a>
+      and
+      <a href="https://eos.org/science-updates/vast-space-sparse-data-an-ai-answer-to-twin-space-weather-challenges/" target="_blank" rel="noopener noreferrer">Vast Space, Sparse Data: an AI perspective on space-weather challenges</a>.
     </p>
     <div class="research-more-links">
       <a class="research-all-publications-link" href="{{ '/publications/' | relative_url }}">Publications</a>
