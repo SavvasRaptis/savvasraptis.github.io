@@ -27,8 +27,6 @@ latest_posts:
   limit: 0
 ---
 
-I am a researcher in space plasma physics at the Johns Hopkins University Applied Physics Laboratory, focusing on experimental heliophysics, statistical modeling, and spacecraft data analysis.
+I am a space plasma physicist and Senior Professional Staff member at the Johns Hopkins University Applied Physics Laboratory. My research in heliophysics examines how collisionless shocks and transient plasma structures transfer energy and accelerate particles, connecting the solar wind with planetary space environments and space weather.
 
-My research focuses on key areas of heliophysics, astrophysics, and plasma physics, including collisionless shock dynamics, particle acceleration, space weather, and localized transient processes at Earth's geospace and at other planetary environments.
-
-My primary expertise includes statistical modeling and analysis, ML/AI applications, kinetic plasma physics, and multi-spacecraft analysis from both in situ and remote sensing instruments. I am currently working on developing data-driven models for space weather applications, investigating particle energization across planetary and astrophysical systems, and developing robust methods for unbiased comparisons between simulations and spacecraft observations.
+My work combines multi-spacecraft observations, statistical modeling, and artificial intelligence (AI), including machine learning (ML), to understand plasma dynamics and develop data-driven models for space-weather applications. I also develop methods for plasma-region classification, event detection, and comparisons between spacecraft observations and simulations.

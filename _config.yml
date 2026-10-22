@@ -6,15 +6,12 @@ title: blank # the website title (if blank, full name will be used instead)
 first_name: Savvas
 middle_name: 
 last_name: Raptis
-contact_note: >
-  The best way to reach me is by e-mail.
-description: > # the ">" symbol means to ignore newlines until "footer_text:"
-  Personal website of Savvas Raptis
+description: >
+  Space plasma physicist at Johns Hopkins APL studying heliophysics, collisionless shocks, particle acceleration, and artificial intelligence for space science.
 footer_text: >
   Powered by <a href="https://jekyllrb.com/" target="_blank">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio">al-folio</a> theme.
   Hosted by <a href="https://pages.github.com/" target="_blank">GitHub Pages</a>.
-  Photos from <a href="https://unsplash.com" target="_blank">Unsplash</a>.
-keywords: jekyll, jekyll-theme, academic-website, portfolio-website, savvas, savvas-raptis # add your own keywords or leave empty
+keywords: Savvas Raptis, heliophysics, space plasma physics, collisionless shocks, particle acceleration, artificial intelligence, machine learning, statistical modeling, space weather
 lang: en # the language of your site (for example: en, fr, cn, ru, etc.)
 icon: favicon.ico # favicon file in /assets/img/
 
